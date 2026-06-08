@@ -1,74 +1,52 @@
-﻿# 2026 World Cup teams and squad data
+# 2026 World Cup Teams
 
-## Group A
-- Czechia: 26 players, 26 photos, status: available
-- Mexico: 26 players, 26 photos, status: available
-- South Africa: 26 players, 25 photos, status: available
-- South Korea: 26 players, 12 photos, status: available
-
-## Group B
-- Bosnia and Herzegovina: 26 players, 26 photos, status: available
-- Canada: 0 players, 0 photos, status: squad pending
-- Qatar: 26 players, 21 photos, status: available
-- Switzerland: 26 players, 26 photos, status: available
-
-## Group C
-- Brazil: 26 players, 20 photos, status: available
-- Haiti: 26 players, 23 photos, status: available
-- Morocco: 26 players, 22 photos, status: available
-- Scotland: 26 players, 25 photos, status: available
-
-## Group D
-- Australia: 26 players, 24 photos, status: available
-- Paraguay: 26 players, 22 photos, status: available
-- Turkey: 26 players, 17 photos, status: available
-- United States: 26 players, 23 photos, status: available
-
-## Group E
-- Cura莽ao: 26 players, 25 photos, status: available
-- Ecuador: 26 players, 26 photos, status: available
-- Germany: 26 players, 26 photos, status: available
-- Ivory Coast: 26 players, 25 photos, status: available
-
-## Group F
-- Japan: 26 players, 26 photos, status: available
-- Netherlands: 26 players, 26 photos, status: available
-- Sweden: 26 players, 24 photos, status: available
-- Tunisia: 26 players, 24 photos, status: available
-
-## Group G
-- Belgium: 26 players, 26 photos, status: available
-- Egypt: 26 players, 20 photos, status: available
-- Iran: 26 players, 19 photos, status: available
-- New Zealand: 26 players, 25 photos, status: available
-
-## Group H
-- Cape Verde: 26 players, 23 photos, status: available
-- Saudi Arabia: 26 players, 19 photos, status: available
-- Spain: 26 players, 24 photos, status: available
-- Uruguay: 26 players, 23 photos, status: available
-
-## Group I
-- France: 26 players, 25 photos, status: available
-- Iraq: 26 players, 20 photos, status: available
-- Norway: 26 players, 24 photos, status: available
-- Senegal: 26 players, 23 photos, status: available
-
-## Group J
-- Algeria: 26 players, 24 photos, status: available
-- Argentina: 26 players, 26 photos, status: available
-- Austria: 26 players, 26 photos, status: available
-- Jordan: 26 players, 16 photos, status: available
-
-## Group K
-- Colombia: 26 players, 25 photos, status: available
-- DR Congo: 26 players, 23 photos, status: available
-- Portugal: 26 players, 24 photos, status: available
-- Uzbekistan: 26 players, 19 photos, status: available
-
-## Group L
-- Croatia: 26 players, 26 photos, status: available
-- England: 26 players, 24 photos, status: available
-- Ghana: 26 players, 25 photos, status: available
-- Panama: 26 players, 25 photos, status: available
-
+| Group | Team | Coach | Players | Photos |
+|---|---|---|---:|---:|
+| A | Mexico | Javier Aguirre | 26 | 26 |
+| A | South Africa | Hugo Broos | 26 | 26 |
+| A | South Korea | Hong Myung-bo | 26 | 26 |
+| A | Czechia | Miroslav Koubek | 26 | 26 |
+| B | Canada | Jesse Marsch | 26 | 22 |
+| B | Switzerland | Murat Yakin | 26 | 26 |
+| B | Qatar | Julen Lopetegui | 26 | 24 |
+| B | Bosnia and Herzegovina | Sergej Barbarez | 26 | 26 |
+| C | Brazil | Carlo Ancelotti | 26 | 26 |
+| C | Morocco | Mohamed Ouahbi | 26 | 26 |
+| C | Haiti | Sébastien Migné | 26 | 24 |
+| C | Scotland | Steve Clarke | 26 | 26 |
+| D | United States | Mauricio Pochettino | 26 | 26 |
+| D | Paraguay | Gustavo Alfaro | 26 | 25 |
+| D | Australia | Tony Popovic | 26 | 26 |
+| D | Turkey | Vincenzo Montella | 26 | 26 |
+| E | Germany | Julian Nagelsmann | 26 | 26 |
+| E | Curaçao | Dick Advocaat | 26 | 25 |
+| E | Ivory Coast | Emerse Faé | 26 | 26 |
+| E | Ecuador | Sebastián Beccacece | 26 | 26 |
+| F | Netherlands | Ronald Koeman | 26 | 26 |
+| F | Japan | Hajime Moriyasu | 26 | 26 |
+| F | Tunisia | Sabri Lamouchi | 26 | 25 |
+| F | Sweden | Graham Potter | 26 | 26 |
+| G | Belgium | Rudi Garcia | 26 | 26 |
+| G | Egypt | Hossam Hassan | 26 | 24 |
+| G | Iran | Amir Ghalenoei | 26 | 26 |
+| G | New Zealand | Darren Bazeley | 26 | 26 |
+| H | Spain | Luis de la Fuente | 26 | 26 |
+| H | Cape Verde | Bubista | 26 | 26 |
+| H | Saudi Arabia | Georgios Donis | 26 | 24 |
+| H | Uruguay | Marcelo Bielsa | 26 | 24 |
+| I | France | Didier Deschamps | 26 | 26 |
+| I | Senegal | Pape Thiaw | 26 | 24 |
+| I | Norway | Ståle Solbakken | 26 | 26 |
+| I | Iraq | Graham Arnold | 26 | 26 |
+| J | Argentina | Lionel Scaloni | 26 | 26 |
+| J | Algeria | Vladimir Petković | 26 | 26 |
+| J | Austria | Ralf Rangnick | 26 | 26 |
+| J | Jordan | Jamal Sellami | 26 | 21 |
+| K | Portugal | Roberto Martínez | 26 | 26 |
+| K | Uzbekistan | Fabio Cannavaro | 26 | 26 |
+| K | Colombia | Néstor Lorenzo | 26 | 26 |
+| K | DR Congo | Sébastien Desabre | 26 | 26 |
+| L | England | Thomas Tuchel | 26 | 26 |
+| L | Croatia | Zlatko Dalić | 26 | 26 |
+| L | Ghana | Carlos Queiroz | 26 | 26 |
+| L | Panama | Thomas Christiansen | 26 | 26 |
