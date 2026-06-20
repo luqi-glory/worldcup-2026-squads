@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#070b18">
+  <title>世界杯视频解说互动</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070b18;
+      --bg-soft: #0d1424;
+      --panel: rgba(255, 255, 255, .08);
+      --panel-strong: rgba(255, 255, 255, .13);
+      --line: rgba(255, 255, 255, .14);
+      --text: #f8fafc;
+      --muted: #a8b3c7;
+      --gold: #f5c451;
+      --mint: #5eead4;
+      --blue: #60a5fa;
+      --rose: #fb7185;
+      --green: #86efac;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .34);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(135deg, rgba(96, 165, 250, .16), transparent 28%),
+        linear-gradient(215deg, rgba(245, 196, 81, .14), transparent 32%),
+        linear-gradient(180deg, #070b18 0%, #0b1222 48%, #111827 100%);
+      color: var(--text);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px min(5vw, 58px);
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(7, 11, 24, .82);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 850;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      color: #06101d;
+      background: linear-gradient(135deg, var(--gold), var(--mint));
+      box-shadow: 0 12px 30px rgba(94, 234, 212, .2);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a,
+    .chip,
+    .mini-btn {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .06);
+      color: var(--text);
+    }
+
+    .nav-links a {
+      padding: 8px 11px;
+    }
+
+    .nav-links a:hover,
+    .mini-btn:hover,
+    .chip:hover {
+      border-color: rgba(94, 234, 212, .48);
+      background: rgba(94, 234, 212, .11);
+    }
+
+    .shell {
+      width: min(1540px, 100%);
+      margin: 0 auto;
+      padding: 24px min(5vw, 58px) 40px;
+    }
+
+    .watch-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .stage,
+    .chat-panel,
+    .context-panel,
+    .transcript-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .045));
+      box-shadow: var(--shadow);
+    }
+
+    .stage {
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .stage-head,
+    .panel-head,
+    .chat-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(7, 11, 24, .42);
+    }
+
+    .stage-title,
+    .panel-title,
+    .chat-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .live-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--rose);
+      box-shadow: 0 0 0 4px rgba(251, 113, 133, .12);
+    }
+
+    .status-dot.ready {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(134, 239, 172, .12);
+    }
+
+    .video-wrap {
+      position: relative;
+      background: #020617;
+      aspect-ratio: 16 / 9;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #020617;
+    }
+
+    .caption-bar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      color: #dbeafe;
+      background: rgba(2, 6, 23, .78);
+    }
+
+    .time-badge,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      color: #dbeafe;
+      background: rgba(96, 165, 250, .12);
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .caption-text {
+      overflow: hidden;
+      min-width: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: #f8fafc;
+      font-weight: 700;
+    }
+
+    .mini-btn {
+      min-height: 34px;
+      padding: 0 12px;
+      font-size: 13px;
+    }
+
+    .chat-panel {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      min-height: 680px;
+      overflow: hidden;
+    }
+
+    .chat-head {
+      align-items: start;
+    }
+
+    .chat-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .team-context {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(7, 11, 24, .32);
+    }
+
+    .control {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 8px;
+      color: var(--text);
+      background: rgba(255, 255, 255, .08);
+      padding: 0 10px;
+      outline: none;
+    }
+
+    .control:focus,
+    textarea:focus {
+      border-color: rgba(94, 234, 212, .68);
+      box-shadow: 0 0 0 4px rgba(94, 234, 212, .1);
+    }
+
+    .chat-log {
+      min-height: 0;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .message {
+      width: fit-content;
+      max-width: 92%;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 8px;
+      padding: 10px 11px;
+      line-height: 1.58;
+      color: #e5edf9;
+      background: rgba(255, 255, 255, .075);
+      font-size: 14px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      color: #06101d;
+      background: linear-gradient(135deg, var(--gold), var(--mint));
+      font-weight: 700;
+    }
+
+    .message.system {
+      width: auto;
+      max-width: 100%;
+      color: #cbd5e1;
+      background: rgba(96, 165, 250, .1);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 14px 12px;
+    }
+
+    .chip {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .chat-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 9px;
+      padding: 12px 14px 14px;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(7, 11, 24, .44);
+    }
+
+    textarea {
+      min-height: 48px;
+      max-height: 140px;
+      resize: vertical;
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 8px;
+      color: var(--text);
+      background: rgba(255, 255, 255, .08);
+      padding: 11px 12px;
+      outline: none;
+      line-height: 1.42;
+    }
+
+    .send-btn {
+      min-width: 74px;
+      min-height: 48px;
+      border: 0;
+      border-radius: 8px;
+      color: #06101d;
+      background: linear-gradient(135deg, var(--gold), var(--mint));
+      font-weight: 850;
+    }
+
+    .send-btn:disabled {
+      opacity: .58;
+      cursor: wait;
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: minmax(280px, .44fr) minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .context-panel,
+    .transcript-panel {
+      overflow: hidden;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 14px;
+    }
+
+    .stat {
+      border: 1px solid rgba(255, 255, 255, .11);
+      border-radius: 8px;
+      padding: 11px;
+      background: rgba(255, 255, 255, .055);
+    }
+
+    .stat b {
+      display: block;
+      font-size: 23px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .endpoint-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: 0 14px 14px;
+    }
+
+    .transcript {
+      max-height: 340px;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .cue {
+      display: grid;
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 10px;
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px;
+      color: #cbd5e1;
+      background: transparent;
+      text-align: left;
+    }
+
+    .cue:hover,
+    .cue.active {
+      color: var(--text);
+      background: rgba(94, 234, 212, .11);
+    }
+
+    .cue-time {
+      color: var(--gold);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+    }
+
+    .cue-text {
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .event-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 14px 14px;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .event-btn {
+      flex: 0 0 auto;
+      min-height: 34px;
+      border: 1px solid rgba(245, 196, 81, .28);
+      border-radius: 8px;
+      padding: 0 10px;
+      color: #fef3c7;
+      background: rgba(245, 196, 81, .1);
+      font-size: 12px;
+    }
+
+    @media (max-width: 1120px) {
+      .watch-grid,
+      .lower-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel {
+        min-height: 560px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .shell {
+        padding: 14px 12px 26px;
+      }
+
+      .stage-head,
+      .caption-bar,
+      .chat-form,
+      .endpoint-row {
+        grid-template-columns: 1fr;
+      }
+
+      .caption-bar {
+        align-items: start;
+      }
+
+      .caption-text {
+        white-space: normal;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">26</span>
+      <span>World Cup Video Room</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">球员页面</a>
+      <a href="#chatLog">实时问答</a>
+      <a href="#transcriptPanel">字幕</a>
+    </div>
+  </nav>
+
+  <main class="shell">
+    <section class="watch-grid">
+      <article class="stage">
+        <header class="stage-head">
+          <div>
+            <h1 class="stage-title">比赛视频解说</h1>
+            <div class="live-row">
+              <span class="pill">字幕已载入</span>
+              <span class="pill" id="durationText">00:00</span>
+            </div>
+          </div>
+          <button class="mini-btn" id="fullscreenBtn" type="button">全屏</button>
+        </header>
+        <div class="video-wrap" id="videoWrap">
+          <video id="matchVideo" controls playsinline preload="metadata">
+            <source src="assets/video/worldcup-commentary.mp4" type="video/mp4">
+            <track src="assets/video/worldcup-commentary.vtt" kind="subtitles" srclang="zh" label="中文" default>
+          </video>
+        </div>
+        <div class="caption-bar">
+          <span class="time-badge" id="currentTime">00:00</span>
+          <div class="caption-text" id="activeCaption">等待播放</div>
+          <button class="mini-btn" id="askCurrentBtn" type="button">问这一段</button>
+        </div>
+        <div class="event-strip" id="eventStrip"></div>
+      </article>
+
+      <aside class="chat-panel">
+        <header class="chat-head">
+          <div>
+            <h2 class="chat-title">视频问答</h2>
+            <div class="chat-meta">
+              <span class="status-dot" id="statusDot"></span>
+              <span id="apiStatus">等待连接</span>
+            </div>
+          </div>
+          <span class="pill" id="contextTime">00:00</span>
+        </header>
+        <div class="team-context">
+          <select class="control" id="teamSelect" aria-label="背景球队">
+            <option value="">自动识别背景球队</option>
+          </select>
+        </div>
+        <div class="chat-log" id="chatLog" aria-live="polite"></div>
+        <div>
+          <div class="chips">
+            <button class="chip" type="button" data-question="刚才谁进球了？">刚才谁进球了？</button>
+            <button class="chip" type="button" data-question="介绍一下7号队员的身世和经历。">介绍7号队员</button>
+            <button class="chip" type="button" data-question="梅西这次进球前发生了什么？">进球前发生了什么？</button>
+            <button class="chip" type="button" data-question="这段解说提到了哪些战术变化？">战术变化</button>
+          </div>
+          <form class="chat-form" id="chatForm">
+            <textarea id="questionInput" placeholder="问视频或球员背景" required></textarea>
+            <button class="send-btn" id="sendBtn" type="submit">发送</button>
+          </form>
+        </div>
+      </aside>
+    </section>
+
+    <section class="lower-grid">
+      <article class="context-panel">
+        <header class="panel-head">
+          <h2 class="panel-title">背景数据</h2>
+          <span class="pill" id="selectedTeamLabel">自动</span>
+        </header>
+        <div class="stats" id="stats"></div>
+        <div class="endpoint-row">
+          <input class="control" id="endpointInput" type="url" aria-label="聊天 API 地址">
+          <button class="mini-btn" id="saveEndpointBtn" type="button">保存 API</button>
+        </div>
+      </article>
+
+      <article class="transcript-panel" id="transcriptPanel">
+        <header class="panel-head">
+          <h2 class="panel-title">字幕时间轴</h2>
+          <span class="pill" id="cueCount">0 条</span>
+        </header>
+        <div class="transcript" id="transcript"></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const video = document.getElementById("matchVideo");
+    const chatLog = document.getElementById("chatLog");
+    const questionInput = document.getElementById("questionInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const teamSelect = document.getElementById("teamSelect");
+    const endpointInput = document.getElementById("endpointInput");
+    const statusDot = document.getElementById("statusDot");
+    const apiStatus = document.getElementById("apiStatus");
+    const defaultEndpoint = window.VIDEO_CHAT_API_URL || localStorage.getItem("worldcupVideoChatApi") || "http://127.0.0.1:8765/chat";
+    const messages = [];
+    let cues = [];
+    let siteData = null;
+    let pending = false;
+
+    endpointInput.value = defaultEndpoint;
+
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[char]));
+    }
+
+    function parseTime(value) {
+      const [hour, minute, rest] = value.trim().replace(",", ".").split(":");
+      return Number(hour) * 3600 + Number(minute) * 60 + Number(rest);
+    }
+
+    function formatTime(seconds) {
+      const safe = Math.max(0, Number(seconds) || 0);
+      const minute = Math.floor(safe / 60);
+      const second = Math.floor(safe % 60);
+      return `${String(minute).padStart(2, "0")}:${String(second).padStart(2, "0")}`;
+    }
+
+    function parseSrt(raw) {
+      return raw.trim().split(/\n\s*\n/).map(block => {
+        const lines = block.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+        if (lines.length < 3 || !lines[1].includes("-->")) return null;
+        const [start, end] = lines[1].split("-->").map(part => part.trim());
+        return {
+          index: Number(lines[0]),
+          start: parseTime(start),
+          end: parseTime(end),
+          text: lines.slice(2).join(" ")
+        };
+      }).filter(Boolean);
+    }
+
+    function currentCue() {
+      const now = video.currentTime || 0;
+      return cues.find(cue => cue.start <= now && cue.end >= now) || null;
+    }
+
+    function nearbyCues(before = 100, after = 20) {
+      const now = video.currentTime || 0;
+      const start = Math.max(0, now - before);
+      const end = now + after;
+      return cues.filter(cue => cue.end >= start && cue.start <= end);
+    }
+
+    function renderMessage(role, content) {
+      const node = document.createElement("div");
+      node.className = `message ${role}`;
+      node.innerHTML = esc(content);
+      chatLog.appendChild(node);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return node;
+    }
+
+    function setApiState(state, label) {
+      statusDot.classList.toggle("ready", state === "ready");
+      apiStatus.textContent = label;
+    }
+
+    function renderTranscript() {
+      document.getElementById("cueCount").textContent = `${cues.length} 条`;
+      document.getElementById("transcript").innerHTML = cues.map(cue => `
+        <button class="cue" type="button" data-cue="${cue.index}">
+          <span class="cue-time">${formatTime(cue.start)}</span>
+          <span class="cue-text">${esc(cue.text)}</span>
+        </button>
+      `).join("");
+      document.querySelectorAll(".cue").forEach(button => {
+        button.addEventListener("click", () => {
+          const hit = cues.find(cue => cue.index === Number(button.dataset.cue));
+          if (!hit) return;
+          video.currentTime = hit.start + 0.05;
+          video.play();
+        });
+      });
+      const events = cues.filter(cue => /进球|打门|梅西|战术|防线|包夹/.test(cue.text));
+      document.getElementById("eventStrip").innerHTML = events.map(cue => `
+        <button class="event-btn" type="button" data-cue="${cue.index}">${formatTime(cue.start)} ${esc(cue.text)}</button>
+      `).join("");
+      document.querySelectorAll(".event-btn").forEach(button => {
+        button.addEventListener("click", () => {
+          const hit = cues.find(cue => cue.index === Number(button.dataset.cue));
+          if (!hit) return;
+          video.currentTime = hit.start + 0.05;
+          video.play();
+        });
+      });
+    }
+
+    function updateVideoState() {
+      const now = video.currentTime || 0;
+      const cue = currentCue();
+      document.getElementById("currentTime").textContent = formatTime(now);
+      document.getElementById("contextTime").textContent = formatTime(now);
+      document.getElementById("activeCaption").textContent = cue ? cue.text : "当前没有字幕";
+      document.querySelectorAll(".cue").forEach(button => {
+        const hit = cues.find(item => item.index === Number(button.dataset.cue));
+        button.classList.toggle("active", Boolean(hit && hit.start <= now && hit.end >= now));
+      });
+    }
+
+    function renderTeams() {
+      if (!siteData) return;
+      const teams = siteData.teams || [];
+      teamSelect.innerHTML = `<option value="">自动识别背景球队</option>` + teams
+        .filter(team => team.players && team.players.length)
+        .map(team => `<option value="${esc(team.id)}">${esc(team.nameZh || team.country)} / ${esc(team.country)}</option>`)
+        .join("");
+    }
+
+    function renderStats() {
+      const teams = siteData?.teams || [];
+      const playerCount = teams.reduce((sum, team) => sum + (team.players?.length || 0), 0);
+      const imageCount = teams.reduce((sum, team) => sum + Number(team.imageCount || 0), 0);
+      const selected = teams.find(team => team.id === teamSelect.value);
+      document.getElementById("selectedTeamLabel").textContent = selected ? (selected.nameZh || selected.country) : "自动";
+      document.getElementById("stats").innerHTML = [
+        [teams.length, "球队"],
+        [playerCount, "球员"],
+        [imageCount, "照片"]
+      ].map(([value, label]) => `<div class="stat"><b>${esc(value)}</b><span>${esc(label)}</span></div>`).join("");
+    }
+
+    function payloadFor(question) {
+      return {
+        question,
+        currentTime: video.currentTime || 0,
+        teamId: teamSelect.value,
+        activeSubtitle: currentCue(),
+        nearbySubtitles: nearbyCues(),
+        history: messages.slice(-6)
+      };
+    }
+
+    async function ask(question) {
+      if (pending || !question.trim()) return;
+      pending = true;
+      sendBtn.disabled = true;
+      const cleanQuestion = question.trim();
+      messages.push({ role: "user", content: cleanQuestion });
+      renderMessage("user", cleanQuestion);
+      const thinking = renderMessage("system", "正在检索字幕和球员背景...");
+      setApiState("loading", "请求中");
+      try {
+        const response = await fetch(endpointInput.value.trim(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadFor(cleanQuestion))
+        });
+        const data = await response.json();
+        if (!response.ok || data.error) throw new Error(data.error || `HTTP ${response.status}`);
+        thinking.remove();
+        messages.push({ role: "assistant", content: data.answer });
+        renderMessage("assistant", data.answer);
+        setApiState("ready", "已连接");
+      } catch (error) {
+        thinking.textContent = `连接失败：${error.message}`;
+        setApiState("error", "未连接");
+      } finally {
+        pending = false;
+        sendBtn.disabled = false;
+        questionInput.value = "";
+        questionInput.focus();
+      }
+    }
+
+    async function init() {
+      renderMessage("system", "我会结合当前播放时间、字幕和球员背景回答。");
+      const [srtResponse, dataResponse] = await Promise.all([
+        fetch("assets/video/worldcup-commentary.srt"),
+        fetch("worldcup_site.json")
+      ]);
+      cues = parseSrt(await srtResponse.text());
+      siteData = await dataResponse.json();
+      renderTranscript();
+      renderTeams();
+      renderStats();
+      updateVideoState();
+    }
+
+    document.getElementById("chatForm").addEventListener("submit", event => {
+      event.preventDefault();
+      ask(questionInput.value);
+    });
+
+    document.querySelectorAll(".chip").forEach(button => {
+      button.addEventListener("click", () => ask(button.dataset.question));
+    });
+
+    document.getElementById("askCurrentBtn").addEventListener("click", () => {
+      const cue = currentCue();
+      ask(cue ? `解释一下 ${formatTime(cue.start)} 这一段：“${cue.text}”` : "解释一下当前这一段。");
+    });
+
+    document.getElementById("fullscreenBtn").addEventListener("click", () => {
+      const target = video;
+      if (target.requestFullscreen) target.requestFullscreen();
+    });
+
+    document.getElementById("saveEndpointBtn").addEventListener("click", () => {
+      localStorage.setItem("worldcupVideoChatApi", endpointInput.value.trim());
+      setApiState("ready", "API 已保存");
+    });
+
+    teamSelect.addEventListener("change", renderStats);
+    video.addEventListener("timeupdate", updateVideoState);
+    video.addEventListener("loadedmetadata", () => {
+      document.getElementById("durationText").textContent = formatTime(video.duration || 0);
+    });
+
+    init().catch(error => {
+      renderMessage("system", `页面数据载入失败：${error.message}`);
+    });
+  </script>
+</body>
+</html>
