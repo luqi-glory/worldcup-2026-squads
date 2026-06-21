@@ -115,7 +115,6 @@
 
     .stage,
     .chat-panel,
-    .context-panel,
     .transcript-panel {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -265,6 +264,23 @@
       outline: none;
     }
 
+    select.control {
+      appearance: none;
+      color: var(--text);
+      color-scheme: light;
+      background:
+        linear-gradient(45deg, transparent 50%, #dbeafe 50%) calc(100% - 18px) 50% / 6px 6px no-repeat,
+        linear-gradient(135deg, #dbeafe 50%, transparent 50%) calc(100% - 13px) 50% / 6px 6px no-repeat,
+        rgba(15, 23, 42, .96);
+      padding-right: 38px;
+    }
+
+    select.control option,
+    select.control optgroup {
+      color: #0f172a;
+      background: #f8fafc;
+    }
+
     .control:focus,
     textarea:focus {
       border-color: rgba(94, 234, 212, .68);
@@ -285,14 +301,43 @@
       max-width: 92%;
       border: 1px solid rgba(255, 255, 255, .12);
       border-radius: 8px;
-      padding: 10px 11px;
+      padding: 11px 12px;
       line-height: 1.58;
       color: #e5edf9;
       background: rgba(255, 255, 255, .075);
       font-size: 14px;
-      white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
+
+    .message > *:first-child { margin-top: 0; }
+    .message > *:last-child { margin-bottom: 0; }
+    .message p { margin: 8px 0; }
+    .message h2,
+    .message h3 {
+      margin: 10px 0 6px;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .message ul,
+    .message ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+    .message li { margin: 4px 0; }
+    .message code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      color: #fef3c7;
+      background: rgba(245, 196, 81, .12);
+    }
+
+    .message a {
+      color: #93c5fd;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .message.user { white-space: pre-wrap; }
 
     .message.user {
       align-self: flex-end;
@@ -319,6 +364,13 @@
       min-height: 32px;
       padding: 0 10px;
       font-size: 12px;
+    }
+
+    .chip:focus-visible,
+    .mini-btn:focus-visible,
+    .send-btn:focus-visible {
+      outline: 3px solid rgba(94, 234, 212, .26);
+      outline-offset: 2px;
     }
 
     .chat-form {
@@ -360,47 +412,13 @@
 
     .lower-grid {
       display: grid;
-      grid-template-columns: minmax(280px, .44fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 18px;
       margin-top: 18px;
     }
 
-    .context-panel,
     .transcript-panel {
       overflow: hidden;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 14px;
-    }
-
-    .stat {
-      border: 1px solid rgba(255, 255, 255, .11);
-      border-radius: 8px;
-      padding: 11px;
-      background: rgba(255, 255, 255, .055);
-    }
-
-    .stat b {
-      display: block;
-      font-size: 23px;
-    }
-
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 3px;
-    }
-
-    .endpoint-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      padding: 0 14px 14px;
     }
 
     .transcript {
@@ -487,8 +505,7 @@
 
       .stage-head,
       .caption-bar,
-      .chat-form,
-      .endpoint-row {
+      .chat-form {
         grid-template-columns: 1fr;
       }
 
@@ -500,9 +517,6 @@
         white-space: normal;
       }
 
-      .stats {
-        grid-template-columns: 1fr;
-      }
     }
   </style>
 </head>
@@ -579,18 +593,6 @@
     </section>
 
     <section class="lower-grid">
-      <article class="context-panel">
-        <header class="panel-head">
-          <h2 class="panel-title">背景数据</h2>
-          <span class="pill" id="selectedTeamLabel">自动</span>
-        </header>
-        <div class="stats" id="stats"></div>
-        <div class="endpoint-row">
-          <input class="control" id="endpointInput" type="url" aria-label="聊天 API 地址">
-          <button class="mini-btn" id="saveEndpointBtn" type="button">保存 API</button>
-        </div>
-      </article>
-
       <article class="transcript-panel" id="transcriptPanel">
         <header class="panel-head">
           <h2 class="panel-title">字幕时间轴</h2>
@@ -607,21 +609,78 @@
     const questionInput = document.getElementById("questionInput");
     const sendBtn = document.getElementById("sendBtn");
     const teamSelect = document.getElementById("teamSelect");
-    const endpointInput = document.getElementById("endpointInput");
     const statusDot = document.getElementById("statusDot");
     const apiStatus = document.getElementById("apiStatus");
-    const defaultEndpoint = window.VIDEO_CHAT_API_URL || localStorage.getItem("worldcupVideoChatApi") || "http://127.0.0.1:8765/chat";
+    const chatEndpoint = resolveChatEndpoint();
     const messages = [];
     let cues = [];
     let siteData = null;
     let pending = false;
 
-    endpointInput.value = defaultEndpoint;
-
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[char]));
+    }
+
+    function resolveChatEndpoint() {
+      const configured = String(window.VIDEO_CHAT_API_URL || "").trim();
+      return configured;
+    }
+
+    function inlineMarkdown(value) {
+      return esc(value)
+        .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+    }
+
+    function markdownToHtml(markdown) {
+      const lines = String(markdown || "").replace(/\r\n/g, "\n").split("\n");
+      const html = [];
+      let listType = "";
+      const closeList = () => {
+        if (!listType) return;
+        html.push(`</${listType}>`);
+        listType = "";
+      };
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) {
+          closeList();
+          continue;
+        }
+        const heading = line.match(/^(#{1,3})\s+(.+)$/);
+        if (heading) {
+          closeList();
+          html.push(`<h${Math.min(heading[1].length + 1, 3)}>${inlineMarkdown(heading[2])}</h${Math.min(heading[1].length + 1, 3)}>`);
+          continue;
+        }
+        const unordered = line.match(/^[-*]\s+(.+)$/);
+        if (unordered) {
+          if (listType !== "ul") {
+            closeList();
+            html.push("<ul>");
+            listType = "ul";
+          }
+          html.push(`<li>${inlineMarkdown(unordered[1])}</li>`);
+          continue;
+        }
+        const ordered = line.match(/^\d+\.\s+(.+)$/);
+        if (ordered) {
+          if (listType !== "ol") {
+            closeList();
+            html.push("<ol>");
+            listType = "ol";
+          }
+          html.push(`<li>${inlineMarkdown(ordered[1])}</li>`);
+          continue;
+        }
+        closeList();
+        html.push(`<p>${inlineMarkdown(line)}</p>`);
+      }
+      closeList();
+      return html.join("");
     }
 
     function parseTime(value) {
@@ -665,7 +724,7 @@
     function renderMessage(role, content) {
       const node = document.createElement("div");
       node.className = `message ${role}`;
-      node.innerHTML = esc(content);
+      node.innerHTML = role === "user" ? esc(content) : markdownToHtml(content);
       chatLog.appendChild(node);
       chatLog.scrollTop = chatLog.scrollHeight;
       return node;
@@ -727,17 +786,66 @@
         .join("");
     }
 
-    function renderStats() {
+    function selectedTeam() {
       const teams = siteData?.teams || [];
-      const playerCount = teams.reduce((sum, team) => sum + (team.players?.length || 0), 0);
-      const imageCount = teams.reduce((sum, team) => sum + Number(team.imageCount || 0), 0);
-      const selected = teams.find(team => team.id === teamSelect.value);
-      document.getElementById("selectedTeamLabel").textContent = selected ? (selected.nameZh || selected.country) : "自动";
-      document.getElementById("stats").innerHTML = [
-        [teams.length, "球队"],
-        [playerCount, "球员"],
-        [imageCount, "照片"]
-      ].map(([value, label]) => `<div class="stat"><b>${esc(value)}</b><span>${esc(label)}</span></div>`).join("");
+      return teams.find(team => team.id === teamSelect.value) || null;
+    }
+
+    function playerSummary(player, team) {
+      const name = player.nameZh || player.name || "球员";
+      const role = player.roleZh || player.roleEn || player.position || "";
+      const club = player.club ? `，俱乐部 ${player.club}` : "";
+      const caps = player.caps !== null && player.caps !== undefined ? `，国家队出场 ${player.caps} 次` : "";
+      return `${name}（${team.nameZh || team.country} #${player.number || "-"}，${role}${club}${caps}）`;
+    }
+
+    function playersForQuestion(question) {
+      const teams = siteData?.teams || [];
+      const selected = selectedTeam();
+      const number = String(question).match(/(\d{1,2})\s*号/);
+      const pool = selected ? [selected] : teams;
+      if (number) {
+        return pool.flatMap(team => (team.players || [])
+          .filter(player => String(player.number || "") === number[1])
+          .map(player => ({ team, player })))
+          .slice(0, 8);
+      }
+      const lower = String(question).toLocaleLowerCase();
+      return pool.flatMap(team => (team.players || [])
+        .filter(player => [player.name, player.nameZh, player.club, player.roleZh, player.roleEn]
+          .filter(Boolean)
+          .some(value => String(value).toLocaleLowerCase().includes(lower)))
+        .map(player => ({ team, player })))
+        .slice(0, 8);
+    }
+
+    function localAnswer(question, note = "") {
+      const cue = currentCue();
+      const near = nearbyCues(70, 25);
+      const selected = selectedTeam();
+      const hits = playersForQuestion(question);
+      const eventHits = near.filter(item => /进球|打门|射门|梅西|战术|防线|包夹|换人|反击/.test(item.text)).slice(-6);
+      const lines = ["## 基于当前字幕的回答"];
+      if (note) lines.push(`- ${note}`);
+      lines.push(`- 当前播放时间：${formatTime(video.currentTime || 0)}`);
+      lines.push(`- 当前字幕：${cue ? cue.text : "这一秒附近没有字幕。"} `);
+      if (eventHits.length) {
+        lines.push("", "## 相关片段");
+        eventHits.forEach(item => lines.push(`- ${formatTime(item.start)}：${item.text}`));
+      } else if (near.length) {
+        lines.push("", "## 附近字幕");
+        near.slice(-5).forEach(item => lines.push(`- ${formatTime(item.start)}：${item.text}`));
+      }
+      if (hits.length) {
+        lines.push("", "## 相关球员");
+        hits.forEach(({ team, player }) => lines.push(`- ${playerSummary(player, team)}`));
+      }
+      if (selected) {
+        lines.push("", "## 背景球队");
+        lines.push(`- ${selected.nameZh || selected.country}：${selected.currentZh || selected.storyZh || selected.currentEn || "已载入阵容数据。"}`);
+      }
+      lines.push("", "页面内回答只基于已加载的字幕和阵容数据；如果问题需要外部实时信息，请等待在线 API 可用后再问。");
+      return lines.join("\n");
     }
 
     function payloadFor(question) {
@@ -751,6 +859,54 @@
       };
     }
 
+    function directMessagesFor(question) {
+      const selected = selectedTeam();
+      const nearby = nearbyCues().map(cue => `[${formatTime(cue.start)}-${formatTime(cue.end)}] ${cue.text}`).join("\n");
+      const playerHits = playersForQuestion(question).map(({ team, player }) => `- ${playerSummary(player, team)}`).join("\n");
+      const teamText = selected ? `${selected.nameZh || selected.country}: ${selected.currentZh || selected.storyZh || selected.currentEn || ""}` : "未手动选择球队。";
+      return [
+        {
+          role: "system",
+          content: "你是世界杯视频问答助手。请用中文回答，优先依据用户当前视频时间、字幕和页面阵容数据；证据不足时要明确说明不确定。可以使用简洁 Markdown。"
+        },
+        ...messages.slice(-7, -1),
+        {
+          role: "user",
+          content: `当前播放时间：${formatTime(video.currentTime || 0)}\n\n附近字幕：\n${nearby || "无"}\n\n背景球队：\n${teamText}\n\n可能相关球员：\n${playerHits || "无"}\n\n用户问题：${question}`
+        }
+      ];
+    }
+
+    function requestBodyFor(question) {
+      if (/\/chat\/completions\/?$/.test(chatEndpoint)) {
+        return {
+          model: window.VIDEO_CHAT_MODEL || "deepseek-v4-pro",
+          messages: directMessagesFor(question),
+          temperature: 0.25,
+          max_tokens: 900
+        };
+      }
+      return payloadFor(question);
+    }
+
+    function requestHeaders() {
+      const headers = { "Content-Type": "application/json" };
+      const apiKey = String(window.VIDEO_CHAT_API_KEY || "").trim();
+      if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+      return headers;
+    }
+
+    async function requestAssistant(question) {
+      const response = await fetch(chatEndpoint, {
+        method: "POST",
+        headers: requestHeaders(),
+        body: JSON.stringify(requestBodyFor(question))
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.error) throw new Error(data.error || `HTTP ${response.status}`);
+      return data.answer || data.choices?.[0]?.message?.content || data.output_text || "";
+    }
+
     async function ask(question) {
       if (pending || !question.trim()) return;
       pending = true;
@@ -758,23 +914,20 @@
       const cleanQuestion = question.trim();
       messages.push({ role: "user", content: cleanQuestion });
       renderMessage("user", cleanQuestion);
-      const thinking = renderMessage("system", "正在检索字幕和球员背景...");
-      setApiState("loading", "请求中");
+      const thinking = renderMessage("system", chatEndpoint ? "正在请求在线 API..." : "正在检索页面内字幕和球员背景...");
+      setApiState(chatEndpoint ? "loading" : "ready", chatEndpoint ? "请求中" : "本地回答");
       try {
-        const response = await fetch(endpointInput.value.trim(), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payloadFor(cleanQuestion))
-        });
-        const data = await response.json();
-        if (!response.ok || data.error) throw new Error(data.error || `HTTP ${response.status}`);
+        const answer = chatEndpoint ? await requestAssistant(cleanQuestion) : localAnswer(cleanQuestion);
         thinking.remove();
-        messages.push({ role: "assistant", content: data.answer });
-        renderMessage("assistant", data.answer);
-        setApiState("ready", "已连接");
+        messages.push({ role: "assistant", content: answer });
+        renderMessage("assistant", answer);
+        setApiState("ready", chatEndpoint ? "在线 API" : "本地回答");
       } catch (error) {
-        thinking.textContent = `连接失败：${error.message}`;
-        setApiState("error", "未连接");
+        const fallback = localAnswer(cleanQuestion, `在线 API 暂时不可用：${error.message}。已切换为页面内数据回答。`);
+        thinking.remove();
+        messages.push({ role: "assistant", content: fallback });
+        renderMessage("assistant", fallback);
+        setApiState("ready", "本地回答");
       } finally {
         pending = false;
         sendBtn.disabled = false;
@@ -784,7 +937,7 @@
     }
 
     async function init() {
-      renderMessage("system", "我会结合当前播放时间、字幕和球员背景回答。");
+      renderMessage("system", "我会结合当前播放时间、字幕和球员背景回答；在线 API 不可用时会自动使用页面内数据。");
       const [srtResponse, dataResponse] = await Promise.all([
         fetch("assets/video/worldcup-commentary.srt"),
         fetch("worldcup_site.json")
@@ -793,8 +946,8 @@
       siteData = await dataResponse.json();
       renderTranscript();
       renderTeams();
-      renderStats();
       updateVideoState();
+      setApiState("ready", chatEndpoint ? "在线 API" : "本地回答");
     }
 
     document.getElementById("chatForm").addEventListener("submit", event => {
@@ -816,12 +969,7 @@
       if (target.requestFullscreen) target.requestFullscreen();
     });
 
-    document.getElementById("saveEndpointBtn").addEventListener("click", () => {
-      localStorage.setItem("worldcupVideoChatApi", endpointInput.value.trim());
-      setApiState("ready", "API 已保存");
-    });
-
-    teamSelect.addEventListener("change", renderStats);
+    teamSelect.addEventListener("change", () => setApiState("ready", chatEndpoint ? "在线 API" : "本地回答"));
     video.addEventListener("timeupdate", updateVideoState);
     video.addEventListener("loadedmetadata", () => {
       document.getElementById("durationText").textContent = formatTime(video.duration || 0);

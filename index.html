@@ -96,10 +96,10 @@
     }
     .hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(320px, .72fr);
+      grid-template-columns: minmax(0, 1fr);
       align-items: end;
-      gap: 42px;
-      max-width: 1420px;
+      gap: 24px;
+      max-width: 1180px;
       margin: 0 auto;
     }
     .eyebrow {
@@ -130,33 +130,6 @@
     }
     .primary { color: #06101d; background: linear-gradient(135deg, var(--gold), var(--mint)); font-weight: 800; }
     .secondary { color: var(--ink); background: rgba(255,255,255,.08); }
-    .spotlight {
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 34px;
-      padding: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.07));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-    .spotlight-top { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-bottom: 14px; }
-    .spotlight-title { margin: 0; font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: .16em; }
-    .spotlight-name { margin: 4px 0 0; font-size: 26px; letter-spacing: -.035em; }
-    .mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .mini-card {
-      min-height: 158px;
-      border-radius: 24px;
-      overflow: hidden;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.1);
-      position: relative;
-    }
-    .mini-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .mini-card span {
-      position: absolute; left: 10px; right: 10px; bottom: 10px;
-      padding: 8px 10px; border-radius: 999px;
-      background: rgba(7,11,24,.72); color: #fff; font-size: 12px;
-      overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-    }
     .shell { max-width: 1420px; margin: 0 auto; padding: 28px min(5vw, 64px) 56px; }
     .console {
       position: sticky;
@@ -177,13 +150,23 @@
       min-height: 48px;
       width: 100%;
       border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
+      border-radius: 12px;
       color: var(--ink);
       background: rgba(255,255,255,.08);
       padding: 0 14px;
       outline: none;
     }
-    select.control { color: var(--ink); }
+    select.control {
+      appearance: none;
+      color: var(--ink);
+      color-scheme: light;
+      background:
+        linear-gradient(45deg, transparent 50%, #dbeafe 50%) calc(100% - 18px) 50% / 6px 6px no-repeat,
+        linear-gradient(135deg, #dbeafe 50%, transparent 50%) calc(100% - 13px) 50% / 6px 6px no-repeat,
+        rgba(15,23,42,.96);
+      padding-right: 38px;
+    }
+    select.control option, select.control optgroup { color: #0f172a; background: #f8fafc; }
     .control::placeholder { color: #8d98ad; }
     .control:focus { border-color: rgba(94,234,212,.68); box-shadow: 0 0 0 4px rgba(94,234,212,.1); }
     .section-head {
@@ -204,7 +187,7 @@
     }
     .team-card {
       border: 1px solid rgba(255,255,255,.12);
-      border-radius: 26px;
+      border-radius: 10px;
       padding: 18px;
       min-height: 185px;
       background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.045));
@@ -214,7 +197,7 @@
     .team-card:hover { transform: translateY(-4px); border-color: rgba(245,196,81,.42); }
     .team-card.active { border-color: rgba(94,234,212,.85); background: linear-gradient(180deg, rgba(94,234,212,.16), rgba(255,255,255,.06)); }
     .team-top { display: flex; justify-content: space-between; gap: 14px; align-items: start; }
-    .team-card h3 { margin: 0; font-size: 23px; line-height: 1.05; letter-spacing: -.035em; }
+    .team-card h3 { margin: 0; font-size: 23px; line-height: 1.05; letter-spacing: -.02em; }
     .alt-name { color: var(--muted); font-size: 12px; margin-top: 5px; min-height: 16px; }
     .pill {
       display: inline-flex; align-items: center; justify-content: center;
@@ -236,7 +219,7 @@
       position: sticky;
       top: 154px;
       border: 1px solid rgba(255,255,255,.14);
-      border-radius: 30px;
+      border-radius: 10px;
       padding: 22px;
       background: rgba(255,255,255,.075);
       box-shadow: var(--shadow);
@@ -253,7 +236,7 @@
     .player-card {
       overflow: hidden;
       border: 1px solid rgba(255,255,255,.12);
-      border-radius: 28px;
+      border-radius: 10px;
       background: rgba(255,255,255,.08);
       box-shadow: 0 18px 44px rgba(0,0,0,.18);
       transition: transform .2s ease, border-color .2s ease;
@@ -302,7 +285,7 @@
       box-shadow: -28px 0 80px rgba(0,0,0,.35);
     }
     .drawer-close { float: right; }
-    .drawer-hero { margin: 44px 0 18px; border-radius: 30px; overflow: hidden; background: rgba(255,255,255,.08); }
+    .drawer-hero { margin: 44px 0 18px; border-radius: 10px; overflow: hidden; background: rgba(255,255,255,.08); }
     .drawer-hero img { width: 100%; aspect-ratio: 16/12; object-fit: cover; display: block; }
     .drawer h2 { font-size: 42px; line-height: .98; letter-spacing: -.055em; margin: 0 0 12px; }
     .drawer-copy { color: #cbd5e1; line-height: 1.65; }
@@ -334,7 +317,6 @@
       .site-nav { align-items: start; flex-direction: column; }
       .nav-links { display: none; }
       .hero { padding-top: 54px; }
-      .mini-grid { grid-template-columns: 1fr; }
       .console { position: static; grid-template-columns: 1fr; border-radius: 22px; }
       .section-head { align-items: start; flex-direction: column; }
       .players.list .player-card { grid-template-columns: 92px 1fr; }
@@ -347,7 +329,7 @@
     <div class="nav-links">
       <a href="#teamsGrid" id="navTeams">Teams</a>
       <a href="#rosterSection" id="navPlayers">Players</a>
-      <a href="video-chat.html">Video Chat</a>
+      <a href="video-chat.html" id="navVideo">Video Chat</a>
     </div>
     <div class="language-toggle" aria-label="Language">
       <button class="lang-btn" type="button" data-lang="en">EN</button>
@@ -365,16 +347,6 @@
           <a class="secondary" href="#rosterSection" id="ctaPlayers">Open roster board</a>
         </div>
       </section>
-      <aside class="spotlight" aria-label="Featured players">
-        <div class="spotlight-top">
-          <div>
-            <p class="spotlight-title" id="spotlightKicker">Spotlight</p>
-            <p class="spotlight-name" id="spotlightName"></p>
-          </div>
-          <span class="pill" id="spotlightTeam"></span>
-        </div>
-        <div class="mini-grid" id="spotlightGrid"></div>
-      </aside>
     </div>
   </header>
   <main class="shell">
@@ -433,12 +405,12 @@
         brand: "World Cup Squads",
         navTeams: "Teams",
         navPlayers: "Players",
+        navVideo: "Video Chat",
         eyebrow: "Interactive squad atlas",
         title: "2026 World Cup Squad Browser",
         lead: "Explore confirmed national-team rosters through a polished scouting-board interface built for fast search, position filtering, bilingual names, and player story cards.",
         explore: "Explore squads",
         openBoard: "Open roster board",
-        spotlight: "Spotlight",
         searchPlaceholder: "Search team, player, club, story",
         allGroups: "All groups",
         allPositions: "All positions",
@@ -477,12 +449,12 @@
         brand: "世界杯阵容",
         navTeams: "球队",
         navPlayers: "球员",
+        navVideo: "视频问答",
         eyebrow: "交互式阵容图谱",
         title: "2026 世界杯阵容浏览器",
         lead: "以专业球探看板方式浏览已收录国家队名单：支持快速搜索、位置筛选、中英双语信息、球员故事卡和详情抽屉。",
         explore: "浏览球队",
         openBoard: "打开阵容看板",
-        spotlight: "焦点球员",
         searchPlaceholder: "搜索球队、球员、俱乐部、故事",
         allGroups: "全部小组",
         allPositions: "全部位置",
@@ -586,12 +558,12 @@
       $("#brandText").textContent = t("brand");
       $("#navTeams").textContent = t("navTeams");
       $("#navPlayers").textContent = t("navPlayers");
+      $("#navVideo").textContent = t("navVideo");
       $("#eyebrow").textContent = t("eyebrow");
       $("#pageTitle").textContent = t("title");
       $("#leadText").textContent = t("lead");
       $("#ctaExplore").textContent = t("explore");
       $("#ctaPlayers").textContent = t("openBoard");
-      $("#spotlightKicker").textContent = t("spotlight");
       searchEl.placeholder = t("searchPlaceholder");
       $("#teamsKicker").textContent = t("teamsKicker");
       $("#teamsTitle").textContent = t("teamsTitle");
@@ -612,20 +584,6 @@
       sortFilter.innerHTML = `<option value="number">${esc(t("sortDefault"))}</option><option value="name">${esc(t("sortName"))}</option><option value="caps">${esc(t("sortCaps"))}</option>`;
       sortFilter.value = ["number","name","caps"].includes(currentSort) ? currentSort : "number";
       document.querySelectorAll(".view-btn").forEach(button => button.classList.toggle("active", button.dataset.view === view));
-    }
-    function renderSpotlight() {
-      const pool = data.teams.flatMap(team => team.players.filter(player => player.image).map(player => ({ team, player })));
-      const picks = pool.filter(item => Number(item.player.caps || 0) > 40).slice(0, 60);
-      const chosen = (picks.length ? picks : pool).slice(0, 3);
-      const first = chosen[0];
-      $("#spotlightName").textContent = first ? playerName(first.player) : t("playersTitle");
-      $("#spotlightTeam").textContent = first ? teamName(first.team) : "";
-      $("#spotlightGrid").innerHTML = chosen.map(({team, player}) => `<button class="mini-card" type="button" data-team="${esc(team.id)}" data-name="${esc(player.name)}"><img src="${esc(player.image)}" alt="${esc(playerName(player))}"><span>${esc(playerName(player))} · ${esc(teamName(team))}</span></button>`).join("");
-      document.querySelectorAll(".mini-card").forEach(card => card.addEventListener("click", () => {
-        selectedId = card.dataset.team;
-        render();
-        document.getElementById("rosterSection").scrollIntoView({ block: "start" });
-      }));
     }
     function renderTeams(teams) {
       teamsEl.innerHTML = teams.map(team => {
@@ -711,7 +669,6 @@
     }
     function render() {
       renderStatic();
-      renderSpotlight();
       const teams = filteredTeams();
       if (!teams.some(team => team.id === selectedId)) selectedId = teams.find(team => team.players.length)?.id || teams[0]?.id || selectedId;
       const team = selectedTeam();

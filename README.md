@@ -8,7 +8,9 @@ Open `index.html` after publishing with GitHub Pages.
 
 `video-chat.html` adds the match video, synced subtitles, and a right-side chat panel.
 
-Run the local DeepSeek bridge before using chat:
+The page no longer shows a local API address field or defaults to `127.0.0.1`. It can use a hidden remote chat endpoint when `window.VIDEO_CHAT_API_URL` is set, including an OpenAI-compatible `/chat/completions` endpoint when `window.VIDEO_CHAT_API_KEY` is provided by a private runtime wrapper. If no remote endpoint is configured, the page answers from the loaded subtitles and squad data instead of failing with `Failed to fetch`.
+
+For local development, you can still run the DeepSeek bridge and set `window.VIDEO_CHAT_API_URL` to that local endpoint in a private wrapper:
 
 ```powershell
 python tools\video_chat_server.py --host 127.0.0.1 --port 8765
