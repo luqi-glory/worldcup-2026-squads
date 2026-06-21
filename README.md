@@ -8,7 +8,7 @@ Open `index.html` after publishing with GitHub Pages.
 
 `video-chat.html` adds the match video, synced subtitles, and a right-side chat panel.
 
-The page no longer shows a local API address field or defaults to `127.0.0.1`. It can use a hidden remote chat endpoint when `window.VIDEO_CHAT_API_URL` is set, including an OpenAI-compatible `/chat/completions` endpoint when `window.VIDEO_CHAT_API_KEY` is provided by a private runtime wrapper. If no remote endpoint is configured, the page answers from the loaded subtitles and squad data instead of failing with `Failed to fetch`.
+The page no longer shows a local API address field or defaults to `127.0.0.1`. It can use a hidden remote chat endpoint from `chat-config.js` or `window.VIDEO_CHAT_API_URL`, including an OpenAI-compatible `/chat/completions` endpoint when an API key is provided by a private runtime wrapper. If no remote endpoint is configured, the page still answers from the loaded match and squad context without exposing technical fallback text to users.
 
 For local development, you can still run the DeepSeek bridge and set `window.VIDEO_CHAT_API_URL` to that local endpoint in a private wrapper:
 

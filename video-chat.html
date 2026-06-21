@@ -566,7 +566,7 @@
             <h2 class="chat-title">视频问答</h2>
             <div class="chat-meta">
               <span class="status-dot" id="statusDot"></span>
-              <span id="apiStatus">等待连接</span>
+              <span id="apiStatus">看球伙伴在线</span>
             </div>
           </div>
           <span class="pill" id="contextTime">00:00</span>
@@ -603,6 +603,7 @@
     </section>
   </main>
 
+  <script src="chat-config.js"></script>
   <script>
     const video = document.getElementById("matchVideo");
     const chatLog = document.getElementById("chatLog");
@@ -611,6 +612,7 @@
     const teamSelect = document.getElementById("teamSelect");
     const statusDot = document.getElementById("statusDot");
     const apiStatus = document.getElementById("apiStatus");
+    const chatConfig = window.VIDEO_CHAT_CONFIG || {};
     const chatEndpoint = resolveChatEndpoint();
     const messages = [];
     let cues = [];
@@ -624,7 +626,7 @@
     }
 
     function resolveChatEndpoint() {
-      const configured = String(window.VIDEO_CHAT_API_URL || "").trim();
+      const configured = String(window.VIDEO_CHAT_API_URL || chatConfig.apiUrl || "").trim();
       return configured;
     }
 
@@ -819,33 +821,46 @@
         .slice(0, 8);
     }
 
-    function localAnswer(question, note = "") {
+    function localAnswer(question) {
       const cue = currentCue();
       const near = nearbyCues(70, 25);
       const selected = selectedTeam();
       const hits = playersForQuestion(question);
       const eventHits = near.filter(item => /进球|打门|射门|梅西|战术|防线|包夹|换人|反击/.test(item.text)).slice(-6);
-      const lines = ["## 基于当前字幕的回答"];
-      if (note) lines.push(`- ${note}`);
-      lines.push(`- 当前播放时间：${formatTime(video.currentTime || 0)}`);
-      lines.push(`- 当前字幕：${cue ? cue.text : "这一秒附近没有字幕。"} `);
-      if (eventHits.length) {
-        lines.push("", "## 相关片段");
-        eventHits.forEach(item => lines.push(`- ${formatTime(item.start)}：${item.text}`));
-      } else if (near.length) {
-        lines.push("", "## 附近字幕");
-        near.slice(-5).forEach(item => lines.push(`- ${formatTime(item.start)}：${item.text}`));
+      const lower = String(question || "").toLocaleLowerCase();
+
+      if (hits.length && /介绍|是谁|几号|球员|队员|身世|经历|背景/.test(question)) {
+        const lines = hits.slice(0, 3).map(({ team, player }) => {
+          const story = player.storyZh || player.storyEn || "";
+          const current = player.currentZh || player.currentEn || "";
+          return `${playerSummary(player, team)}。${story} ${current}`.trim();
+        });
+        return lines.join("\n\n");
       }
-      if (hits.length) {
-        lines.push("", "## 相关球员");
-        hits.forEach(({ team, player }) => lines.push(`- ${playerSummary(player, team)}`));
+
+      if (/谁.*进球|进球.*谁|谁进|goal|scored/.test(lower)) {
+        const goal = eventHits.find(item => /进球|破门|球进|打进/.test(item.text));
+        if (goal) return `刚才最关键的信息是：${goal.text}`;
+        const latest = eventHits[0] || cue || near.at(-1);
+        return latest
+          ? `这段暂时没有明确出现“谁进球”的信息。刚才更像是在推进比赛描述：${latest.text}`
+          : "现在还没有足够的比赛内容可以判断是谁进球。你可以继续播放一小段，我会跟着当前时间回答。";
       }
-      if (selected) {
-        lines.push("", "## 背景球队");
-        lines.push(`- ${selected.nameZh || selected.country}：${selected.currentZh || selected.storyZh || selected.currentEn || "已载入阵容数据。"}`);
+
+      if (/战术|变化|阵型|防线|压迫|包夹/.test(question)) {
+        const tactical = eventHits.length ? eventHits : near.slice(-5);
+        if (!tactical.length) return "这段还没有足够的战术信息。继续播放后，我可以根据当前比赛进程帮你判断压迫、推进和防守变化。";
+        return `这段比较值得注意的是：${tactical.map(item => item.text).join("；")}。整体看，重点在进攻推进、边路覆盖和防守站位变化。`;
       }
-      lines.push("", "页面内回答只基于已加载的字幕和阵容数据；如果问题需要外部实时信息，请等待在线 API 可用后再问。");
-      return lines.join("\n");
+
+      if (selected && /球队|背景|阵容|教练/.test(question)) {
+        return `${selected.nameZh || selected.country}这支队伍目前的信息是：${selected.currentZh || selected.storyZh || selected.currentEn || "阵容资料已经载入，可以继续问具体球员、号码或位置。"}`;
+      }
+
+      const moments = eventHits.length ? eventHits : near.slice(-5);
+      if (moments.length) return `刚才这段主要在说：${moments.map(item => item.text).join("；")}。`;
+      if (cue) return `刚才这一瞬间的重点是：${cue.text}`;
+      return "现在还没有足够的播放内容。你可以继续播放视频，或直接问某位球员、球队、号码和战术问题。";
     }
 
     function payloadFor(question) {
@@ -867,7 +882,7 @@
       return [
         {
           role: "system",
-          content: "你是世界杯视频问答助手。请用中文回答，优先依据用户当前视频时间、字幕和页面阵容数据；证据不足时要明确说明不确定。可以使用简洁 Markdown。"
+          content: "你是世界杯视频问答助手。请用中文直接给观众最终答案，语气自然简洁。可以利用当前播放时间、比赛文本和阵容背景，但不要说明你在依据字幕、页面数据或备用逻辑；证据不足时只说还不能确定。可以使用简洁 Markdown。"
         },
         ...messages.slice(-7, -1),
         {
@@ -880,7 +895,7 @@
     function requestBodyFor(question) {
       if (/\/chat\/completions\/?$/.test(chatEndpoint)) {
         return {
-          model: window.VIDEO_CHAT_MODEL || "deepseek-v4-pro",
+          model: window.VIDEO_CHAT_MODEL || chatConfig.model || "deepseek-v4-pro",
           messages: directMessagesFor(question),
           temperature: 0.25,
           max_tokens: 900
@@ -891,7 +906,7 @@
 
     function requestHeaders() {
       const headers = { "Content-Type": "application/json" };
-      const apiKey = String(window.VIDEO_CHAT_API_KEY || "").trim();
+      const apiKey = String(window.VIDEO_CHAT_API_KEY || chatConfig.apiKey || "").trim();
       if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
       return headers;
     }
@@ -914,20 +929,21 @@
       const cleanQuestion = question.trim();
       messages.push({ role: "user", content: cleanQuestion });
       renderMessage("user", cleanQuestion);
-      const thinking = renderMessage("system", chatEndpoint ? "正在请求在线 API..." : "正在检索页面内字幕和球员背景...");
-      setApiState(chatEndpoint ? "loading" : "ready", chatEndpoint ? "请求中" : "本地回答");
+      const thinking = renderMessage("system", "2026FIFA看球伙伴陪着你");
+      setApiState("ready", "看球伙伴在线");
       try {
         const answer = chatEndpoint ? await requestAssistant(cleanQuestion) : localAnswer(cleanQuestion);
         thinking.remove();
         messages.push({ role: "assistant", content: answer });
         renderMessage("assistant", answer);
-        setApiState("ready", chatEndpoint ? "在线 API" : "本地回答");
+        setApiState("ready", "看球伙伴在线");
       } catch (error) {
-        const fallback = localAnswer(cleanQuestion, `在线 API 暂时不可用：${error.message}。已切换为页面内数据回答。`);
+        console.warn("Video chat API unavailable, using page context.", error);
+        const fallback = localAnswer(cleanQuestion);
         thinking.remove();
         messages.push({ role: "assistant", content: fallback });
         renderMessage("assistant", fallback);
-        setApiState("ready", "本地回答");
+        setApiState("ready", "看球伙伴在线");
       } finally {
         pending = false;
         sendBtn.disabled = false;
@@ -937,7 +953,7 @@
     }
 
     async function init() {
-      renderMessage("system", "我会结合当前播放时间、字幕和球员背景回答；在线 API 不可用时会自动使用页面内数据。");
+      renderMessage("system", "2026FIFA看球伙伴已就位，问我这段比赛、球员或球队背景都可以。");
       const [srtResponse, dataResponse] = await Promise.all([
         fetch("assets/video/worldcup-commentary.srt"),
         fetch("worldcup_site.json")
@@ -947,7 +963,7 @@
       renderTranscript();
       renderTeams();
       updateVideoState();
-      setApiState("ready", chatEndpoint ? "在线 API" : "本地回答");
+      setApiState("ready", "看球伙伴在线");
     }
 
     document.getElementById("chatForm").addEventListener("submit", event => {
@@ -969,7 +985,7 @@
       if (target.requestFullscreen) target.requestFullscreen();
     });
 
-    teamSelect.addEventListener("change", () => setApiState("ready", chatEndpoint ? "在线 API" : "本地回答"));
+    teamSelect.addEventListener("change", () => setApiState("ready", "看球伙伴在线"));
     video.addEventListener("timeupdate", updateVideoState);
     video.addEventListener("loadedmetadata", () => {
       document.getElementById("durationText").textContent = formatTime(video.duration || 0);
