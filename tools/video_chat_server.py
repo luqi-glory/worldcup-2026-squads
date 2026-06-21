@@ -105,6 +105,12 @@ def field_hits(question: str, fields: list[str]) -> int:
     return score
 
 
+def is_player_profile_question(question: str) -> bool:
+    player_intent = re.search(r"(介绍|身世|经历|背景|履历|俱乐部|国家队|球员|队员|几号|\d{1,2}\s*号|是谁)", question)
+    video_intent = re.search(r"(刚才|刚刚|当前|现在|这一段|这段|进球|战术|发生|打门|射门|字幕|视频|比赛)", question)
+    return bool(player_intent and not video_intent)
+
+
 def build_background(question: str, team_id: str | None = None) -> str:
     teams = SITE_DATA.get("teams", [])
     number_hints = question_numbers(question)
@@ -173,8 +179,14 @@ def build_background(question: str, team_id: str | None = None) -> str:
 
     team_notes = sorted(team_notes, reverse=True)[:10]
     player_notes = sorted(player_notes, reverse=True)[:70]
+    priority_notes = [note for score, note in player_notes if score >= 18][:8]
     return "\n".join(
-        ["球队背景:"] + [note for _, note in team_notes] + ["", "球员背景:"] + [note for _, note in player_notes]
+        ["最相关球员（回答球员/号码问题时优先使用）:"]
+        + priority_notes
+        + ["", "球队背景:"]
+        + [note for _, note in team_notes]
+        + ["", "球员背景:"]
+        + [note for _, note in player_notes]
     ).strip()
 
 
@@ -232,8 +244,17 @@ def build_messages(payload: dict) -> list[dict[str, str]]:
 
     team_id = clean_text(payload.get("teamId")) or None
     recent = subtitle_window(current_time)
-    full_transcript = cue_lines(SUBTITLES)
-    recent_transcript = cue_lines(recent)
+    profile_question = is_player_profile_question(question)
+    full_transcript = (
+        "本问题是球员/号码资料问题，已省略全量字幕以避免干扰；请优先使用相关背景信息。"
+        if profile_question
+        else cue_lines(SUBTITLES)
+    )
+    recent_transcript = (
+        "本问题是球员/号码资料问题，当前字幕仅作背景，不可用来否定已命中的球员资料。"
+        if profile_question
+        else cue_lines(recent)
+    )
     background = build_background(question, team_id=team_id)
     history = payload.get("history") or []
     clipped_history = [
@@ -243,20 +264,23 @@ def build_messages(payload: dict) -> list[dict[str, str]]:
     ]
 
     system = (
-        "你是世界杯视频解说互动助手。请用中文回答，优先依据给定字幕、当前播放时间和球员/球队背景信息。"
-        "用户问“刚才”“刚刚”“我离开时”这类问题时，重点参考当前时间附近字幕；"
-        "如果字幕或背景没有足够证据，请明确说不确定，不要编造。回答要简洁、有判断。"
+        "你是世界杯视频解说互动助手。请用中文回答，结合给定字幕、当前播放时间和球员/球队背景信息。"
+        "用户问“球员、队员、几号、号码、身世、经历、俱乐部、国家队履历”时，优先使用球员/球队背景；"
+        "如果用户选择了球队并询问某个号码，优先回答该球队对应号码的球员，不要因为当前字幕没提到他就否定背景。"
+        "如果这是纯球员资料问题，不要转去介绍当前视频字幕里的其他人物。"
+        "用户问“刚才”“刚刚”“我离开时”“这一段”这类视频进程问题时，重点参考当前时间附近字幕。"
+        "如果字幕或背景没有足够证据，请明确说不确定，不要编造。回答要简洁、有判断，可以使用简洁 Markdown。"
     )
     user = f"""当前视频播放时间: {format_timestamp(current_time)}
+
+相关背景信息（已按问题相关性排序；如果“最相关球员”有内容，回答球员/号码问题时必须优先使用）:
+{background}
 
 当前时间附近字幕:
 {recent_transcript}
 
 全量字幕:
 {full_transcript}
-
-相关背景信息:
-{background}
 
 用户问题:
 {question}
