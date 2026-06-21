@@ -110,7 +110,7 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
       gap: 18px;
-      align-items: stretch;
+      align-items: start;
     }
 
     .stage,
@@ -169,6 +169,11 @@
       box-shadow: 0 0 0 4px rgba(134, 239, 172, .12);
     }
 
+    .status-dot.local {
+      background: var(--gold);
+      box-shadow: 0 0 0 4px rgba(245, 196, 81, .12);
+    }
+
     .video-wrap {
       position: relative;
       background: #020617;
@@ -225,9 +230,13 @@
     }
 
     .chat-panel {
+      position: sticky;
+      top: 84px;
       display: grid;
       grid-template-rows: auto auto 1fr auto;
-      min-height: 680px;
+      height: min(760px, calc(100vh - 108px));
+      min-height: 560px;
+      max-height: calc(100vh - 108px);
       overflow: hidden;
     }
 
@@ -289,11 +298,33 @@
 
     .chat-log {
       min-height: 0;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, .72) rgba(15, 23, 42, .42);
       display: flex;
       flex-direction: column;
       gap: 10px;
       padding: 14px;
+    }
+
+    .chat-log::-webkit-scrollbar,
+    .transcript::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .chat-log::-webkit-scrollbar-track,
+    .transcript::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, .42);
+      border-radius: 999px;
+    }
+
+    .chat-log::-webkit-scrollbar-thumb,
+    .transcript::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, .72);
+      border: 2px solid rgba(15, 23, 42, .42);
+      border-radius: 999px;
     }
 
     .message {
@@ -329,6 +360,53 @@
       border-radius: 5px;
       color: #fef3c7;
       background: rgba(245, 196, 81, .12);
+    }
+
+    .message pre {
+      margin: 10px 0;
+      max-width: 100%;
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(2, 6, 23, .72);
+      padding: 10px;
+    }
+
+    .message pre code {
+      padding: 0;
+      color: #dbeafe;
+      background: transparent;
+      white-space: pre;
+    }
+
+    .message blockquote {
+      margin: 10px 0;
+      padding: 8px 10px;
+      border-left: 3px solid rgba(94, 234, 212, .62);
+      color: #cbd5e1;
+      background: rgba(94, 234, 212, .08);
+    }
+
+    .message table {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    .message th,
+    .message td {
+      border: 1px solid rgba(255, 255, 255, .14);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .message th {
+      color: #fef3c7;
+      background: rgba(245, 196, 81, .1);
     }
 
     .message a {
@@ -484,7 +562,9 @@
       }
 
       .chat-panel {
-        min-height: 560px;
+        position: static;
+        height: min(640px, calc(100vh - 110px));
+        min-height: 480px;
       }
     }
 
@@ -515,6 +595,11 @@
 
       .caption-text {
         white-space: normal;
+      }
+
+      .chat-panel {
+        height: 62vh;
+        min-height: 420px;
       }
 
     }
@@ -566,7 +651,7 @@
             <h2 class="chat-title">视频问答</h2>
             <div class="chat-meta">
               <span class="status-dot" id="statusDot"></span>
-              <span id="apiStatus">看球伙伴在线</span>
+              <span id="apiStatus">正在连接</span>
             </div>
           </div>
           <span class="pill" id="contextTime">00:00</span>
@@ -618,6 +703,7 @@
     let cues = [];
     let siteData = null;
     let pending = false;
+    let apiErrorNotified = false;
 
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -627,39 +713,131 @@
 
     function resolveChatEndpoint() {
       const configured = String(window.VIDEO_CHAT_API_URL || chatConfig.apiUrl || "").trim();
-      return configured;
+      if (configured) return configured;
+      const localHosts = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
+      if (localHosts.has(location.hostname) && location.port) {
+        return `${location.origin}/chat`;
+      }
+      return "";
+    }
+
+    function safeLink(url) {
+      const trimmed = String(url || "").trim();
+      return /^https?:\/\//i.test(trimmed) ? trimmed.replace(/"/g, "%22") : "#";
     }
 
     function inlineMarkdown(value) {
-      return esc(value)
+      const codeTokens = [];
+      let text = esc(value).replace(/`([^`]+)`/g, (_, code) => {
+        const token = `@@CODE${codeTokens.length}@@`;
+        codeTokens.push(`<code>${code}</code>`);
+        return token;
+      });
+      text = text
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_, label, url) => `<a href="${safeLink(url)}" target="_blank" rel="noreferrer">${label}</a>`)
         .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-        .replace(/`([^`]+)`/g, "<code>$1</code>")
-        .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+        .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+        .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+        .replace(/(^|[\s(])_([^_\n]+)_/g, "$1<em>$2</em>");
+      return text.replace(/@@CODE(\d+)@@/g, (_, index) => codeTokens[Number(index)] || "");
+    }
+
+    function splitTableRow(line) {
+      return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(cell => cell.trim());
+    }
+
+    function isTableDivider(line) {
+      return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+    }
+
+    function renderTable(headerLine, rowLines) {
+      const headers = splitTableRow(headerLine);
+      const body = rowLines.map(line => splitTableRow(line));
+      return [
+        "<table><thead><tr>",
+        ...headers.map(cell => `<th>${inlineMarkdown(cell)}</th>`),
+        "</tr></thead><tbody>",
+        ...body.map(row => `<tr>${headers.map((_, index) => `<td>${inlineMarkdown(row[index] || "")}</td>`).join("")}</tr>`),
+        "</tbody></table>"
+      ].join("");
     }
 
     function markdownToHtml(markdown) {
       const lines = String(markdown || "").replace(/\r\n/g, "\n").split("\n");
       const html = [];
       let listType = "";
+      let paragraph = [];
       const closeList = () => {
         if (!listType) return;
         html.push(`</${listType}>`);
         listType = "";
       };
-      for (const rawLine of lines) {
+      const closeParagraph = () => {
+        if (!paragraph.length) return;
+        html.push(`<p>${paragraph.map(inlineMarkdown).join("<br>")}</p>`);
+        paragraph = [];
+      };
+      for (let index = 0; index < lines.length; index += 1) {
+        const rawLine = lines[index];
         const line = rawLine.trim();
-        if (!line) {
+        if (line.startsWith("```")) {
+          closeParagraph();
           closeList();
+          const code = [];
+          index += 1;
+          while (index < lines.length && !lines[index].trim().startsWith("```")) {
+            code.push(lines[index]);
+            index += 1;
+          }
+          html.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
+          continue;
+        }
+        if (!line) {
+          closeParagraph();
+          closeList();
+          continue;
+        }
+        if (line.includes("|") && lines[index + 1] && isTableDivider(lines[index + 1])) {
+          closeParagraph();
+          closeList();
+          const rows = [];
+          index += 2;
+          while (index < lines.length && lines[index].trim().includes("|")) {
+            rows.push(lines[index]);
+            index += 1;
+          }
+          index -= 1;
+          html.push(renderTable(line, rows));
           continue;
         }
         const heading = line.match(/^(#{1,3})\s+(.+)$/);
         if (heading) {
+          closeParagraph();
           closeList();
           html.push(`<h${Math.min(heading[1].length + 1, 3)}>${inlineMarkdown(heading[2])}</h${Math.min(heading[1].length + 1, 3)}>`);
           continue;
         }
+        if (/^(-{3,}|\*{3,})$/.test(line)) {
+          closeParagraph();
+          closeList();
+          html.push("<hr>");
+          continue;
+        }
+        const quote = line.match(/^>\s?(.*)$/);
+        if (quote) {
+          closeParagraph();
+          closeList();
+          const quoteLines = [quote[1]];
+          while (index + 1 < lines.length && /^>\s?/.test(lines[index + 1].trim())) {
+            index += 1;
+            quoteLines.push(lines[index].trim().replace(/^>\s?/, ""));
+          }
+          html.push(`<blockquote>${quoteLines.map(inlineMarkdown).join("<br>")}</blockquote>`);
+          continue;
+        }
         const unordered = line.match(/^[-*]\s+(.+)$/);
         if (unordered) {
+          closeParagraph();
           if (listType !== "ul") {
             closeList();
             html.push("<ul>");
@@ -670,6 +848,7 @@
         }
         const ordered = line.match(/^\d+\.\s+(.+)$/);
         if (ordered) {
+          closeParagraph();
           if (listType !== "ol") {
             closeList();
             html.push("<ol>");
@@ -679,8 +858,9 @@
           continue;
         }
         closeList();
-        html.push(`<p>${inlineMarkdown(line)}</p>`);
+        paragraph.push(line);
       }
+      closeParagraph();
       closeList();
       return html.join("");
     }
@@ -734,6 +914,7 @@
 
     function setApiState(state, label) {
       statusDot.classList.toggle("ready", state === "ready");
+      statusDot.classList.toggle("local", state === "local");
       apiStatus.textContent = label;
     }
 
@@ -813,10 +994,14 @@
           .slice(0, 8);
       }
       const lower = String(question).toLocaleLowerCase();
+      const tokens = lower.split(/[^\p{L}\p{N}]+/u).filter(token => token.length >= 2);
       return pool.flatMap(team => (team.players || [])
         .filter(player => [player.name, player.nameZh, player.club, player.roleZh, player.roleEn]
           .filter(Boolean)
-          .some(value => String(value).toLocaleLowerCase().includes(lower)))
+          .some(value => {
+            const field = String(value).toLocaleLowerCase();
+            return field.includes(lower) || lower.includes(field) || tokens.some(token => field.includes(token));
+          }))
         .map(player => ({ team, player })))
         .slice(0, 8);
     }
@@ -828,6 +1013,14 @@
       const hits = playersForQuestion(question);
       const eventHits = near.filter(item => /进球|打门|射门|梅西|战术|防线|包夹|换人|反击/.test(item.text)).slice(-6);
       const lower = String(question || "").toLocaleLowerCase();
+
+      if (/你是谁|你是什么|你能做什么|who are you|what are you/.test(lower)) {
+        return [
+          "**我是这个页面里的世界杯视频问答助手。**",
+          "我会结合当前视频时间、附近字幕和阵容数据回答比赛片段、球员背景、球队信息和战术问题。",
+          chatEndpoint ? "当前状态：API 已配置，会优先走对话接口。" : "当前状态：未配置远程 API，先使用本页已加载的字幕和阵容上下文回答。"
+        ].join("\n\n");
+      }
 
       if (hits.length && /介绍|是谁|几号|球员|队员|身世|经历|背景/.test(question)) {
         const lines = hits.slice(0, 3).map(({ team, player }) => {
@@ -858,9 +1051,23 @@
       }
 
       const moments = eventHits.length ? eventHits : near.slice(-5);
-      if (moments.length) return `刚才这段主要在说：${moments.map(item => item.text).join("；")}。`;
-      if (cue) return `刚才这一瞬间的重点是：${cue.text}`;
-      return "现在还没有足够的播放内容。你可以继续播放视频，或直接问某位球员、球队、号码和战术问题。";
+      if (/刚才|刚刚|当前|现在|这一段|发生|说了什么|summary|summarize/.test(lower) && moments.length) {
+        return `刚才这段主要在说：${moments.map(item => item.text).join("；")}。`;
+      }
+      if (/几比几|比分|领先|落后|score/.test(lower)) {
+        return moments.length
+          ? `从当前上下文还不能可靠判断完整比分；附近解说重点是：${moments.map(item => item.text).join("；")}。`
+          : "当前字幕里还没有足够信息判断比分。";
+      }
+      if (cue) return `这个问题没有在已载入的球员或字幕上下文中直接命中。当前这一瞬间的重点是：${cue.text}`;
+      return "这个问题暂时没有在已载入的字幕或阵容资料中命中。可以问具体球员、球队、号码、进球或战术变化。";
+    }
+
+    function previousMessages(limit = 8) {
+      return messages
+        .slice(0, -1)
+        .filter(item => item.role === "user" || item.role === "assistant")
+        .slice(-limit);
     }
 
     function payloadFor(question) {
@@ -870,30 +1077,44 @@
         teamId: teamSelect.value,
         activeSubtitle: currentCue(),
         nearbySubtitles: nearbyCues(),
-        history: messages.slice(-6)
+        history: previousMessages(6)
       };
+    }
+
+    function isPlayerProfileQuestion(question) {
+      const text = String(question || "");
+      const playerIntent = /(介绍|身世|经历|背景|履历|俱乐部|国家队|球员|队员|几号|\d{1,2}\s*号|是谁)/.test(text);
+      const videoIntent = /(刚才|刚刚|当前|现在|这一段|这段|进球|战术|发生|打门|射门|字幕|视频|比赛)/.test(text);
+      return playerIntent && !videoIntent;
     }
 
     function directMessagesFor(question) {
       const selected = selectedTeam();
-      const nearby = nearbyCues().map(cue => `[${formatTime(cue.start)}-${formatTime(cue.end)}] ${cue.text}`).join("\n");
+      const profileQuestion = isPlayerProfileQuestion(question);
+      const nearby = profileQuestion
+        ? "本问题是球员/号码资料问题，请优先使用上方相关球员；当前字幕不可用来否定已命中的球员资料。"
+        : nearbyCues().map(cue => `[${formatTime(cue.start)}-${formatTime(cue.end)}] ${cue.text}`).join("\n");
       const playerHits = playersForQuestion(question).map(({ team, player }) => `- ${playerSummary(player, team)}`).join("\n");
       const teamText = selected ? `${selected.nameZh || selected.country}: ${selected.currentZh || selected.storyZh || selected.currentEn || ""}` : "未手动选择球队。";
       return [
         {
           role: "system",
-          content: "你是世界杯视频问答助手。请用中文直接给观众最终答案，语气自然简洁。可以利用当前播放时间、比赛文本和阵容背景，但不要说明你在依据字幕、页面数据或备用逻辑；证据不足时只说还不能确定。可以使用简洁 Markdown。"
+          content: "你是世界杯视频问答助手。请用中文直接给观众最终答案，语气自然简洁。问球员、队员、几号、身世、经历、俱乐部或国家队履历时，优先使用阵容背景；问刚才、这一段、进球或战术时，优先使用当前播放时间和附近字幕。不要说明你在依据页面数据或备用逻辑；证据不足时只说还不能确定。可以使用简洁 Markdown。"
         },
-        ...messages.slice(-7, -1),
+        ...previousMessages(7),
         {
           role: "user",
-          content: `当前播放时间：${formatTime(video.currentTime || 0)}\n\n附近字幕：\n${nearby || "无"}\n\n背景球队：\n${teamText}\n\n可能相关球员：\n${playerHits || "无"}\n\n用户问题：${question}`
+          content: `当前播放时间：${formatTime(video.currentTime || 0)}\n\n背景球队：\n${teamText}\n\n可能相关球员（回答球员/号码问题时优先）：\n${playerHits || "无"}\n\n附近字幕：\n${nearby || "无"}\n\n用户问题：${question}`
         }
       ];
     }
 
-    function requestBodyFor(question) {
-      if (/\/chat\/completions\/?$/.test(chatEndpoint)) {
+    function usesChatCompletions(endpoint) {
+      return /\/chat\/completions\/?$/i.test(endpoint) || chatConfig.endpointType === "openai";
+    }
+
+    function requestBodyFor(question, endpoint) {
+      if (usesChatCompletions(endpoint)) {
         return {
           model: window.VIDEO_CHAT_MODEL || chatConfig.model || "deepseek-v4-pro",
           messages: directMessagesFor(question),
@@ -911,15 +1132,17 @@
       return headers;
     }
 
-    async function requestAssistant(question) {
-      const response = await fetch(chatEndpoint, {
+    async function requestAssistant(question, endpoint) {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: requestHeaders(),
-        body: JSON.stringify(requestBodyFor(question))
+        body: JSON.stringify(requestBodyFor(question, endpoint))
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.error) throw new Error(data.error || `HTTP ${response.status}`);
-      return data.answer || data.choices?.[0]?.message?.content || data.output_text || "";
+      const answer = data.answer || data.choices?.[0]?.message?.content || data.output_text || "";
+      if (!String(answer).trim()) throw new Error("API returned an empty answer");
+      return answer;
     }
 
     async function ask(question) {
@@ -929,21 +1152,26 @@
       const cleanQuestion = question.trim();
       messages.push({ role: "user", content: cleanQuestion });
       renderMessage("user", cleanQuestion);
-      const thinking = renderMessage("system", "2026FIFA看球伙伴陪着你");
-      setApiState("ready", "看球伙伴在线");
+      const endpoint = resolveChatEndpoint();
+      const thinking = renderMessage("system", endpoint ? "API 正在结合字幕和阵容上下文回答..." : "本地上下文正在检索...");
+      setApiState(endpoint ? "ready" : "local", endpoint ? "API 已连接" : "本地上下文模式");
       try {
-        const answer = chatEndpoint ? await requestAssistant(cleanQuestion) : localAnswer(cleanQuestion);
+        const answer = endpoint ? await requestAssistant(cleanQuestion, endpoint) : localAnswer(cleanQuestion);
         thinking.remove();
         messages.push({ role: "assistant", content: answer });
         renderMessage("assistant", answer);
-        setApiState("ready", "看球伙伴在线");
+        setApiState(endpoint ? "ready" : "local", endpoint ? "API 已连接" : "本地上下文模式");
       } catch (error) {
         console.warn("Video chat API unavailable, using page context.", error);
         const fallback = localAnswer(cleanQuestion);
         thinking.remove();
+        if (!apiErrorNotified) {
+          renderMessage("system", "API 请求失败，已临时切换到本地字幕和阵容上下文。");
+          apiErrorNotified = true;
+        }
         messages.push({ role: "assistant", content: fallback });
         renderMessage("assistant", fallback);
-        setApiState("ready", "看球伙伴在线");
+        setApiState("local", "API 失败·本地模式");
       } finally {
         pending = false;
         sendBtn.disabled = false;
@@ -963,7 +1191,7 @@
       renderTranscript();
       renderTeams();
       updateVideoState();
-      setApiState("ready", "看球伙伴在线");
+      setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式");
     }
 
     document.getElementById("chatForm").addEventListener("submit", event => {
@@ -985,7 +1213,7 @@
       if (target.requestFullscreen) target.requestFullscreen();
     });
 
-    teamSelect.addEventListener("change", () => setApiState("ready", "看球伙伴在线"));
+    teamSelect.addEventListener("change", () => setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式"));
     video.addEventListener("timeupdate", updateVideoState);
     video.addEventListener("loadedmetadata", () => {
       document.getElementById("durationText").textContent = formatTime(video.duration || 0);
