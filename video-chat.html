@@ -143,15 +143,6 @@
       font-weight: 800;
     }
 
-    .live-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
     .status-dot {
       width: 9px;
       height: 9px;
@@ -441,6 +432,18 @@
       font-weight: 800;
     }
 
+    .mode-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 14px 8px;
+    }
+
+    .mode-row .form-label {
+      padding: 0;
+    }
+
     .chip {
       min-height: 32px;
       padding: 0 10px;
@@ -491,15 +494,14 @@
       cursor: wait;
     }
 
-    .demo-form {
-      border-top: 0;
-      padding-top: 0;
-    }
-
-    .demo-btn {
-      color: #eaf7ff;
+    .mode-toggle {
+      min-height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
       border: 1px solid rgba(94, 234, 212, .32);
+      color: #eaf7ff;
       background: rgba(96, 165, 250, .14);
+      font-size: 12px;
     }
 
     .lower-grid {
@@ -638,10 +640,6 @@
         <header class="stage-head">
           <div>
             <h1 class="stage-title">比赛视频解说</h1>
-            <div class="live-row">
-              <span class="pill">字幕已载入</span>
-              <span class="pill" id="durationText">00:00</span>
-            </div>
           </div>
           <button class="mini-btn" id="fullscreenBtn" type="button">全屏</button>
         </header>
@@ -683,15 +681,13 @@
             <button class="chip" type="button" data-question="分析一下目前局面">分析一下目前局面</button>
             <button class="chip" type="button" data-question="足球里点球规则">足球里点球规则</button>
           </div>
-          <div class="form-label">API 智能问答</div>
+          <div class="mode-row">
+            <div class="form-label" id="modeLabel">API 智能问答</div>
+            <button class="mode-toggle" id="modeToggle" type="button">切换到语音/文字交互</button>
+          </div>
           <form class="chat-form" id="chatForm">
             <textarea id="questionInput" placeholder="问视频片段、球员背景或足球规则" required></textarea>
             <button class="send-btn" id="sendBtn" type="submit">智能问答</button>
-          </form>
-          <div class="form-label">语音/文字交互演示</div>
-          <form class="chat-form demo-form" id="demoForm">
-            <textarea id="demoInput" placeholder="输入演示问题；留空点击可尝试语音输入"></textarea>
-            <button class="send-btn demo-btn" id="demoBtn" type="submit">交互</button>
           </form>
         </div>
       </aside>
@@ -714,8 +710,8 @@
     const chatLog = document.getElementById("chatLog");
     const questionInput = document.getElementById("questionInput");
     const sendBtn = document.getElementById("sendBtn");
-    const demoInput = document.getElementById("demoInput");
-    const demoBtn = document.getElementById("demoBtn");
+    const modeLabel = document.getElementById("modeLabel");
+    const modeToggle = document.getElementById("modeToggle");
     const teamSelect = document.getElementById("teamSelect");
     const statusDot = document.getElementById("statusDot");
     const apiStatus = document.getElementById("apiStatus");
@@ -731,6 +727,7 @@
     let demoCaption = null;
     let demoSubtitleCue = null;
     let recognition = null;
+    let interactionMode = "api";
 
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -1270,8 +1267,8 @@
       messages.push({ role: "assistant", content: DEMO_REPLY });
       renderMessage("assistant", DEMO_REPLY);
       setApiState("local", source === "voice" ? "语音演示模式" : "文字演示模式");
-      demoInput.value = "";
-      demoInput.focus();
+      questionInput.value = "";
+      questionInput.focus();
     }
 
     function startVoiceDemo() {
@@ -1290,8 +1287,8 @@
       recognition.lang = "zh-CN";
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
-      demoBtn.disabled = true;
-      demoBtn.textContent = "聆听";
+      sendBtn.disabled = true;
+      sendBtn.textContent = "聆听";
       setApiState("local", "等待语音输入");
       recognition.onresult = event => {
         const transcript = event.results?.[0]?.[0]?.transcript || "语音输入";
@@ -1302,19 +1299,29 @@
         runDemoInteraction("语音输入", "voice");
       };
       recognition.onend = () => {
-        demoBtn.disabled = false;
-        demoBtn.textContent = "交互";
+        sendBtn.disabled = false;
+        sendBtn.textContent = "交互";
       };
       recognition.start();
     }
 
     function handleDemoSubmit() {
-      const typed = demoInput.value.trim();
+      const typed = questionInput.value.trim();
       if (typed) {
         runDemoInteraction(typed, "text");
         return;
       }
       startVoiceDemo();
+    }
+
+    function updateInteractionMode() {
+      const demo = interactionMode === "demo";
+      modeLabel.textContent = demo ? "语音/文字交互演示" : "API 智能问答";
+      modeToggle.textContent = demo ? "切换到 API 智能问答" : "切换到语音/文字交互";
+      sendBtn.textContent = demo ? "交互" : "智能问答";
+      questionInput.required = !demo;
+      questionInput.placeholder = demo ? "输入演示问题；留空点击可尝试语音输入" : "问视频片段、球员背景或足球规则";
+      setApiState(chatEndpoint ? "ready" : "local", demo ? "语音/文字演示模式" : (chatEndpoint ? "API 已连接" : "本地上下文模式"));
     }
 
     async function init() {
@@ -1333,12 +1340,17 @@
 
     document.getElementById("chatForm").addEventListener("submit", event => {
       event.preventDefault();
+      if (interactionMode === "demo") {
+        handleDemoSubmit();
+        return;
+      }
       ask(questionInput.value);
     });
 
-    document.getElementById("demoForm").addEventListener("submit", event => {
-      event.preventDefault();
-      handleDemoSubmit();
+    modeToggle.addEventListener("click", () => {
+      interactionMode = interactionMode === "api" ? "demo" : "api";
+      updateInteractionMode();
+      questionInput.focus();
     });
 
     document.querySelectorAll(".chip").forEach(button => {
@@ -1357,9 +1369,7 @@
 
     teamSelect.addEventListener("change", () => setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式"));
     video.addEventListener("timeupdate", updateVideoState);
-    video.addEventListener("loadedmetadata", () => {
-      document.getElementById("durationText").textContent = formatTime(video.duration || 0);
-    });
+    updateInteractionMode();
 
     init().catch(error => {
       renderMessage("system", `页面数据载入失败：${error.message}`);
