@@ -480,18 +480,42 @@
     }
 
     .send-btn {
+      width: 74px;
       min-width: 74px;
       min-height: 48px;
       border: 0;
-      border-radius: 8px;
+      border-radius: 12px;
       color: #06101d;
       background: linear-gradient(135deg, var(--gold), var(--mint));
       font-weight: 850;
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
     }
 
     .send-btn:disabled {
       opacity: .58;
       cursor: wait;
+    }
+
+    .send-btn img {
+      width: 34px;
+      height: 34px;
+      display: block;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.18));
+    }
+
+    .send-btn .send-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .mode-toggle {
@@ -687,7 +711,10 @@
           </div>
           <form class="chat-form" id="chatForm">
             <textarea id="questionInput" placeholder="问视频片段、球员背景或足球规则" required></textarea>
-            <button class="send-btn" id="sendBtn" type="submit">智能问答</button>
+            <button class="send-btn" id="sendBtn" type="submit" aria-label="智能问答">
+              <img src="assets/soccer-ball-icon.svg" alt="" aria-hidden="true">
+              <span class="send-label" id="sendLabel">智能问答</span>
+            </button>
           </form>
         </div>
       </aside>
@@ -710,6 +737,7 @@
     const chatLog = document.getElementById("chatLog");
     const questionInput = document.getElementById("questionInput");
     const sendBtn = document.getElementById("sendBtn");
+    const sendLabel = document.getElementById("sendLabel");
     const modeLabel = document.getElementById("modeLabel");
     const modeToggle = document.getElementById("modeToggle");
     const teamSelect = document.getElementById("teamSelect");
@@ -1288,7 +1316,8 @@
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
       sendBtn.disabled = true;
-      sendBtn.textContent = "聆听";
+      sendBtn.setAttribute("aria-label", "聆听");
+      sendLabel.textContent = "聆听";
       setApiState("local", "等待语音输入");
       recognition.onresult = event => {
         const transcript = event.results?.[0]?.[0]?.transcript || "语音输入";
@@ -1300,7 +1329,8 @@
       };
       recognition.onend = () => {
         sendBtn.disabled = false;
-        sendBtn.textContent = "交互";
+        sendBtn.setAttribute("aria-label", "交互");
+        sendLabel.textContent = "交互";
       };
       recognition.start();
     }
@@ -1318,7 +1348,9 @@
       const demo = interactionMode === "demo";
       modeLabel.textContent = demo ? "语音/文字交互演示" : "API 智能问答";
       modeToggle.textContent = demo ? "切换到 API 智能问答" : "切换到语音/文字交互";
-      sendBtn.textContent = demo ? "交互" : "智能问答";
+      const label = demo ? "交互" : "智能问答";
+      sendBtn.setAttribute("aria-label", label);
+      sendLabel.textContent = label;
       questionInput.required = !demo;
       questionInput.placeholder = demo ? "输入演示问题；留空点击可尝试语音输入" : "问视频片段、球员背景或足球规则";
       setApiState(chatEndpoint ? "ready" : "local", demo ? "语音/文字演示模式" : (chatEndpoint ? "API 已连接" : "本地上下文模式"));

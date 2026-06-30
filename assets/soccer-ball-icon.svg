@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Soccer ball">
+  <defs>
+    <radialGradient id="ball" cx="38%" cy="28%" r="72%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".62" stop-color="#e8f7f4"/>
+      <stop offset="1" stop-color="#74d7c9"/>
+    </radialGradient>
+    <linearGradient id="panel" x1="18" x2="108" y1="20" y2="110">
+      <stop stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#075985"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="56" fill="url(#ball)" stroke="#d7fff8" stroke-width="4"/>
+  <path d="M64 31 85 46 77 72H51L43 46Z" fill="url(#panel)"/>
+  <path d="M64 31 58 12M43 46 22 39M85 46l21-7M51 72 36 96M77 72l15 24" fill="none" stroke="#0f172a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58 12a56 56 0 0 1 47 27M106 39a56 56 0 0 1-14 57M92 96a56 56 0 0 1-56 0M36 96a56 56 0 0 1-14-57M22 39a56 56 0 0 1 36-27" fill="none" stroke="#0f172a" stroke-width="7" stroke-linecap="round"/>
+  <path d="M43 46 51 72M85 46 77 72M51 72h26M43 46l21-15 21 15" fill="none" stroke="#d7fff8" stroke-width="3" opacity=".72"/>
+</svg>
