@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070b18">
-  <title>2026 World Cup Squad Browser</title>
+  <title>2026 世界杯智能解说</title>
   <style>
     :root {
       color-scheme: dark;
@@ -52,10 +52,8 @@
     }
     .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.02em; }
     .brand-mark {
-      width: 34px; height: 34px; border-radius: 12px;
-      display: grid; place-items: center;
-      color: #06101d; background: linear-gradient(135deg, var(--gold), var(--mint));
-      box-shadow: 0 12px 34px rgba(94,234,212,.22);
+      width: 92px; height: 38px;
+      display: block; object-fit: contain;
     }
     .nav-links { display: flex; gap: 12px; color: var(--muted); font-size: 13px; }
     .nav-links a { text-decoration: none; padding: 8px 10px; border-radius: 999px; }
@@ -80,7 +78,7 @@
       inset: 0;
       background:
         linear-gradient(110deg, rgba(7,11,24,.92), rgba(7,11,24,.48)),
-        url("https://images.unsplash.com/photo-1518604666860-9ed391f76460?auto=format&fit=crop&w=2200&q=80");
+        url("assets/image.png");
       background-size: cover;
       background-position: center;
       opacity: .72;
@@ -111,9 +109,19 @@
     h1 {
       margin: 18px 0 16px;
       max-width: 960px;
-      font-size: clamp(44px, 8vw, 104px);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      font-size: clamp(42px, 7vw, 92px);
       line-height: .92;
-      letter-spacing: -.075em;
+      letter-spacing: 0;
+    }
+    .hero-title-logo {
+      width: clamp(116px, 16vw, 190px);
+      height: auto;
+      flex: 0 0 auto;
+      object-fit: contain;
     }
     .lead {
       max-width: 720px;
@@ -456,7 +464,7 @@
 </head>
 <body>
   <nav class="site-nav">
-    <div class="brand"><span class="brand-mark">26</span><span id="brandText">World Cup Squads</span></div>
+    <div class="brand"><img class="brand-mark" src="assets/SM-logo.svg" alt="SM logo"><span id="brandText">2026 世界杯智能解说</span></div>
     <div class="nav-links">
       <a href="#matchCenter" id="navResults">Results</a>
       <a href="#teamsGrid" id="navTeams">Teams</a>
@@ -471,9 +479,9 @@
   <header class="hero">
     <div class="hero-grid">
       <section>
-        <span class="eyebrow" id="eyebrow">Interactive squad atlas</span>
-        <h1 id="pageTitle">2026 World Cup Squad Browser</h1>
-        <p class="lead" id="leadText">Explore confirmed national-team rosters through a polished scouting-board interface built for fast search, position filtering, bilingual names, and player story cards.</p>
+        <span class="eyebrow" id="eyebrow">智能赛事解说</span>
+        <h1 id="pageTitle"><img class="hero-title-logo" src="assets/SM-logo.svg" alt="SM logo"><span id="pageTitleText">2026 世界杯智能解说</span></h1>
+        <p class="lead" id="leadText">围绕比赛视频、实时字幕、球员资料和 RAG 问答，构建可演示、可交互的世界杯智能解说体验。</p>
         <div class="hero-actions">
           <a class="primary" href="#matchCenter" id="ctaResults">Open match center</a>
           <a class="secondary" href="#teamsGrid" id="ctaExplore">Explore squads</a>
@@ -553,14 +561,14 @@
     const data = window.WORLDCUP_DATA;
     const copy = {
       en: {
-        brand: "World Cup Squads",
+        brand: "2026 世界杯智能解说",
         navResults: "Results",
         navTeams: "Teams",
         navPlayers: "Players",
         navVideo: "Video Chat",
-        eyebrow: "Interactive squad atlas",
-        title: "2026 World Cup Squad Browser",
-        lead: "Explore confirmed national-team rosters through a polished scouting-board interface built for fast search, position filtering, bilingual names, and player story cards.",
+        eyebrow: "AI commentary cockpit",
+        title: "2026 世界杯智能解说",
+        lead: "Explore match video, live subtitles, player context, and RAG-powered football Q&A in one interactive World Cup commentary experience.",
         results: "Open match center",
         explore: "Explore squads",
         openBoard: "Open roster board",
@@ -614,14 +622,14 @@
         list: "List",
       },
       zh: {
-        brand: "世界杯阵容",
+        brand: "2026 世界杯智能解说",
         navResults: "赛果",
         navTeams: "球队",
         navPlayers: "球员",
         navVideo: "视频问答",
-        eyebrow: "交互式阵容图谱",
-        title: "2026 世界杯阵容浏览器",
-        lead: "以专业球探看板方式浏览已收录国家队名单：支持快速搜索、位置筛选、中英双语信息、球员故事卡和详情抽屉。",
+        eyebrow: "智能赛事解说",
+        title: "2026 世界杯智能解说",
+        lead: "围绕比赛视频、实时字幕、球员资料和 RAG 问答，构建可演示、可交互的世界杯智能解说体验。",
         results: "打开赛果中心",
         explore: "浏览球队",
         openBoard: "打开阵容看板",
@@ -693,7 +701,7 @@
     const savedKey = "worldcupSavedPlayers";
     const teamById = new Map(data.teams.map(team => [team.id, team]));
     let selectedId = data.teams.find(team => team.players.length)?.id || data.teams[0]?.id;
-    let lang = localStorage.getItem("worldcupLang") || "en";
+    let lang = localStorage.getItem("worldcupLang") || "zh";
     let view = localStorage.getItem("worldcupView") || "grid";
     let saved = new Set(JSON.parse(localStorage.getItem(savedKey) || "[]"));
 
@@ -836,7 +844,7 @@
       $("#navPlayers").textContent = t("navPlayers");
       $("#navVideo").textContent = t("navVideo");
       $("#eyebrow").textContent = t("eyebrow");
-      $("#pageTitle").textContent = t("title");
+      $("#pageTitleText").textContent = t("title");
       $("#leadText").textContent = t("lead");
       $("#ctaResults").textContent = t("results");
       $("#ctaExplore").textContent = t("explore");

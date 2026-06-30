@@ -1,0 +1,126 @@
+[
+  {
+    "start": 0.0,
+    "end": 7.48,
+    "text": "马丁内斯在禁区边缘观察一下，将球分给身边的罗梅罗。这是2026年美加墨世界杯J组的一场较量。",
+    "emotion": "low",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0000.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0000.wav"
+  },
+  {
+    "start": 11.76,
+    "end": 18.0,
+    "text": "面对阿尔及利亚紧凑的防线，阿根廷并不急于发力。梅西回撤得很深，在中圈附近寻求接应。",
+    "emotion": "low",
+    "truncated": true,
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0001.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0001.wav"
+  },
+  {
+    "start": 21.96,
+    "end": 28.84,
+    "text": "阿根廷在左路尝试寻找空隙。沙伊比贴得很紧，球又回传到了中路。",
+    "emotion": "medium",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0002.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0002.wav"
+  },
+  {
+    "start": 31.0,
+    "end": 33.0,
+    "text": "梅西拿球",
+    "emotion": "low",
+    "truncated": true,
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0003.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0003.wav"
+  },
+  {
+    "start": 33.44,
+    "end": 38.76,
+    "text": "阿尔及利亚中场逼抢，本塔莱布拦截了传球。马扎背身护住皮球，老塔罗上来围抢。",
+    "emotion": "medium",
+    "truncated": true,
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0003.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0003.wav"
+  },
+  {
+    "start": 41.0,
+    "end": 44.0,
+    "text": "迪马利亚直塞长传，好球！",
+    "emotion": "high",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0004.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0004.wav"
+  },
+  {
+    "start": 45,
+    "end": 47,
+    "text": "梅西搓射，球进了！球进了！",
+    "emotion": "peak",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0005.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0005.wav"
+  },
+  {
+    "start":47.5,
+    "end": 52.5,
+    "text": "比赛的第十六分钟，阿根廷队终于打破了僵局。一比零领先！",
+    "emotion": "high",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0006.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0006.wav"
+  },
+  {
+    "start": 60,
+    "end": 65,
+    "text": "梅西这球，处理非常冷静。",
+    "emotion": "high",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0007.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0007.wav"
+  },
+  {
+    "start": 71.4,
+    "end": 77.72,
+    "text": "莱昂内尔·梅西，他再一次成为了这片绿茵场的主宰。阿根廷队的球员们都在向他们的队长靠拢。",
+    "emotion": "high",
+    "truncated": true,
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0008.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0008.wav"
+  },
+  {
+    "start": 82.2,
+    "end": 85,
+    "text": "好的，我等一下再回答你的问题。我们先来看下回放",
+    "emotion": "high",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0009.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0009.wav"
+  },
+  {
+    "start": 85.16,
+    "end": 90.32,
+    "text": "梅西，中路禁区弧顶，闪开角度，左脚打门，球跃过了齐达内的指尖。",
+    "emotion": "high",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0010.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0010.wav"
+  },
+  {
+    "start": 96.04,
+    "end": 101.92,
+    "text": "再看刚才那一例进球的慢动作回放，梅西在禁区边缘的处理简直是艺术品。",
+    "emotion": "medium",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0011.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0011.wav"
+  },
+  {
+    "start": 105.28,
+    "end": 113.24,
+    "text": "梅西张开双臂奔跑，他依然是这支阿根廷队的灵魂。刚刚你问我是谁传球给梅西，是迪马利亚一个精准的直塞长传。",
+    "emotion": "medium",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0012.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0012.wav"
+  },
+  {
+    "start": 116.32,
+    "end": 120.04,
+    "text": "一比零，阿根廷暂时领先。",
+    "emotion": "low",
+    "_wav_path": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0013.wav",
+    "wav": "/mnt/cpfs/yqh/SportsMaster/v1.0.4-lightweight-api-0617/results/gemini_2026_test_run_20260621_171946/tts/wavs/seg_0013.wav"
+  }
+]

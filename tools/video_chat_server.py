@@ -16,6 +16,7 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(__file__).resolve().parents[1]
 VIDEO_DIR = ROOT / "assets" / "video"
 SUBTITLE_PATH = VIDEO_DIR / "worldcup-commentary.srt"
+COMMENTARY_PATH = VIDEO_DIR / "interaction-commentary.json"
 SITE_DATA_PATH = ROOT / "worldcup_site.json"
 DEFAULT_MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-pro")
 
@@ -61,11 +62,28 @@ def parse_srt(path: Path) -> list[SubtitleCue]:
     return cues
 
 
+def parse_commentary_json(path: Path) -> list[SubtitleCue]:
+    if not path.exists():
+        return []
+    raw = json.loads(path.read_text(encoding="utf-8-sig"))
+    cues: list[SubtitleCue] = []
+    for index, item in enumerate(raw, start=1):
+        try:
+            start = float(item.get("start", 0))
+            end = float(item.get("end", start + 4))
+            text = str(item.get("text") or "").strip()
+            if text:
+                cues.append(SubtitleCue(index=index, start=start, end=end, text=text))
+        except (TypeError, ValueError, AttributeError):
+            continue
+    return cues
+
+
 def load_site_data() -> dict:
     return json.loads(SITE_DATA_PATH.read_text(encoding="utf-8"))
 
 
-SUBTITLES = parse_srt(SUBTITLE_PATH)
+SUBTITLES = parse_commentary_json(COMMENTARY_PATH) or parse_srt(SUBTITLE_PATH)
 SITE_DATA = load_site_data()
 
 
@@ -264,7 +282,7 @@ def build_messages(payload: dict) -> list[dict[str, str]]:
     ]
 
     system = (
-        "你是世界杯视频解说互动助手。请用中文回答，结合给定字幕、当前播放时间和球员/球队背景信息。"
+        "你是世界杯视频解说互动助手。请用中文回答，结合交互视频 commentary.json 时间轴、当前播放时间和球员/球队背景信息。"
         "用户问“球员、队员、几号、号码、身世、经历、俱乐部、国家队履历”时，优先使用球员/球队背景；"
         "如果用户选择了球队并询问某个号码，优先回答该球队对应号码的球员，不要因为当前字幕没提到他就否定背景。"
         "如果这是纯球员资料问题，不要转去介绍当前视频字幕里的其他人物。"

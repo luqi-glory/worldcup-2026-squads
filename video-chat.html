@@ -3,24 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#05201f">
+  <meta name="theme-color" content="#070b18">
   <title>世界杯视频解说互动</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #031316;
-      --bg-soft: #06272b;
-      --panel: rgba(236, 253, 245, .08);
-      --panel-strong: rgba(186, 230, 253, .13);
-      --line: rgba(125, 211, 252, .2);
-      --text: #eefcf8;
-      --muted: #9ab7bd;
-      --gold: #34d399;
-      --mint: #2dd4bf;
-      --blue: #38bdf8;
+      --bg: #070b18;
+      --bg-soft: #0d1424;
+      --panel: rgba(255, 255, 255, .08);
+      --panel-strong: rgba(255, 255, 255, .13);
+      --line: rgba(255, 255, 255, .14);
+      --text: #f8fafc;
+      --muted: #a8b3c7;
+      --gold: #f5c451;
+      --mint: #5eead4;
+      --blue: #60a5fa;
       --rose: #fb7185;
       --green: #86efac;
-      --shadow: 0 24px 80px rgba(2, 44, 54, .36);
+      --shadow: 0 24px 80px rgba(0, 0, 0, .34);
     }
 
     * { box-sizing: border-box; }
@@ -30,9 +30,9 @@
       min-height: 100vh;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, "Microsoft YaHei", sans-serif;
       background:
-        linear-gradient(135deg, rgba(56, 189, 248, .18), transparent 30%),
-        linear-gradient(215deg, rgba(45, 212, 191, .16), transparent 34%),
-        linear-gradient(180deg, #031316 0%, #06272b 52%, #071d2a 100%);
+        linear-gradient(135deg, rgba(96, 165, 250, .16), transparent 28%),
+        linear-gradient(215deg, rgba(245, 196, 81, .14), transparent 32%),
+        linear-gradient(180deg, #070b18 0%, #0b1222 48%, #111827 100%);
       color: var(--text);
     }
 
@@ -50,7 +50,7 @@
       gap: 18px;
       padding: 14px min(5vw, 58px);
       border-bottom: 1px solid rgba(255, 255, 255, .1);
-      background: rgba(3, 19, 22, .86);
+      background: rgba(7, 11, 24, .82);
       backdrop-filter: blur(18px);
     }
 
@@ -66,9 +66,6 @@
       width: 96px;
       height: 42px;
       object-fit: contain;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
     }
 
     .nav-links {
@@ -80,6 +77,7 @@
     }
 
     .nav-links a,
+    .chip,
     .mini-btn {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -92,7 +90,8 @@
     }
 
     .nav-links a:hover,
-    .mini-btn:hover {
+    .mini-btn:hover,
+    .chip:hover {
       border-color: rgba(94, 234, 212, .48);
       background: rgba(94, 234, 212, .11);
     }
@@ -111,7 +110,8 @@
     }
 
     .stage,
-    .chat-panel {
+    .chat-panel,
+    .transcript-panel {
       border: 1px solid var(--line);
       border-radius: 8px;
       background: linear-gradient(180deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .045));
@@ -124,6 +124,7 @@
     }
 
     .stage-head,
+    .panel-head,
     .chat-head {
       display: flex;
       align-items: center;
@@ -131,10 +132,11 @@
       gap: 12px;
       padding: 13px 14px;
       border-bottom: 1px solid rgba(255, 255, 255, .1);
-      background: rgba(3, 19, 22, .48);
+      background: rgba(7, 11, 24, .42);
     }
 
     .stage-title,
+    .panel-title,
     .chat-title {
       margin: 0;
       font-size: 16px;
@@ -253,7 +255,7 @@
       gap: 8px;
       padding: 12px 14px;
       border-bottom: 1px solid rgba(255, 255, 255, .1);
-      background: rgba(3, 19, 22, .34);
+      background: rgba(7, 11, 24, .32);
     }
 
     .control {
@@ -303,16 +305,19 @@
       padding: 14px;
     }
 
-    .chat-log::-webkit-scrollbar {
+    .chat-log::-webkit-scrollbar,
+    .transcript::-webkit-scrollbar {
       width: 10px;
     }
 
-    .chat-log::-webkit-scrollbar-track {
+    .chat-log::-webkit-scrollbar-track,
+    .transcript::-webkit-scrollbar-track {
       background: rgba(15, 23, 42, .42);
       border-radius: 999px;
     }
 
-    .chat-log::-webkit-scrollbar-thumb {
+    .chat-log::-webkit-scrollbar-thumb,
+    .transcript::-webkit-scrollbar-thumb {
       background: rgba(148, 163, 184, .72);
       border: 2px solid rgba(15, 23, 42, .42);
       border-radius: 999px;
@@ -410,8 +415,8 @@
 
     .message.user {
       align-self: flex-end;
-      color: #04211f;
-      background: linear-gradient(135deg, var(--blue), var(--mint));
+      color: #06101d;
+      background: linear-gradient(135deg, var(--gold), var(--mint));
       font-weight: 700;
     }
 
@@ -422,6 +427,27 @@
       background: rgba(96, 165, 250, .1);
     }
 
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 14px 12px;
+    }
+
+    .form-label {
+      padding: 0 14px 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .chip {
+      min-height: 32px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .chip:focus-visible,
     .mini-btn:focus-visible,
     .send-btn:focus-visible {
       outline: 3px solid rgba(94, 234, 212, .26);
@@ -434,7 +460,7 @@
       gap: 9px;
       padding: 12px 14px 14px;
       border-top: 1px solid rgba(255, 255, 255, .1);
-      background: rgba(3, 19, 22, .48);
+      background: rgba(7, 11, 24, .44);
     }
 
     textarea {
@@ -455,8 +481,8 @@
       min-height: 48px;
       border: 0;
       border-radius: 8px;
-      color: #04211f;
-      background: linear-gradient(135deg, var(--blue), var(--mint));
+      color: #06101d;
+      background: linear-gradient(135deg, var(--gold), var(--mint));
       font-weight: 850;
     }
 
@@ -465,8 +491,87 @@
       cursor: wait;
     }
 
+    .demo-form {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .demo-btn {
+      color: #eaf7ff;
+      border: 1px solid rgba(94, 234, 212, .32);
+      background: rgba(96, 165, 250, .14);
+    }
+
+    .lower-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .transcript-panel {
+      overflow: hidden;
+    }
+
+    .transcript {
+      max-height: 340px;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .cue {
+      display: grid;
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 10px;
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px;
+      color: #cbd5e1;
+      background: transparent;
+      text-align: left;
+    }
+
+    .cue:hover,
+    .cue.active {
+      color: var(--text);
+      background: rgba(94, 234, 212, .11);
+    }
+
+    .cue-time {
+      color: var(--gold);
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+    }
+
+    .cue-text {
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .event-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 14px 14px;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .event-btn {
+      flex: 0 0 auto;
+      min-height: 34px;
+      border: 1px solid rgba(245, 196, 81, .28);
+      border-radius: 8px;
+      padding: 0 10px;
+      color: #fef3c7;
+      background: rgba(245, 196, 81, .1);
+      font-size: 12px;
+    }
+
     @media (max-width: 1120px) {
-      .watch-grid {
+      .watch-grid,
+      .lower-grid {
         grid-template-columns: 1fr;
       }
 
@@ -523,6 +628,7 @@
     <div class="nav-links">
       <a href="index.html">球员页面</a>
       <a href="#chatLog">实时问答</a>
+      <a href="#transcriptPanel">字幕</a>
     </div>
   </nav>
 
@@ -542,14 +648,15 @@
         <div class="video-wrap" id="videoWrap">
           <video id="matchVideo" controls playsinline preload="metadata">
             <source src="assets/video/interaction-demo.mp4" type="video/mp4">
-            <track src="assets/video/worldcup-commentary.vtt" kind="subtitles" srclang="zh" label="中文" default>
+            <track src="assets/video/interaction-commentary.vtt" kind="subtitles" srclang="zh" label="中文" default>
           </video>
         </div>
         <div class="caption-bar">
           <span class="time-badge" id="currentTime">00:00</span>
           <div class="caption-text" id="activeCaption">等待播放</div>
-          <span class="pill" id="captionMode">字幕同步</span>
+          <button class="mini-btn" id="askCurrentBtn" type="button">问这一段</button>
         </div>
+        <div class="event-strip" id="eventStrip"></div>
       </article>
 
       <aside class="chat-panel">
@@ -570,12 +677,34 @@
         </div>
         <div class="chat-log" id="chatLog" aria-live="polite"></div>
         <div>
+          <div class="form-label">智能推荐问答</div>
+          <div class="chips">
+            <button class="chip" type="button" data-question="刚刚是谁进球了">刚刚是谁进球了</button>
+            <button class="chip" type="button" data-question="分析一下目前局面">分析一下目前局面</button>
+            <button class="chip" type="button" data-question="足球里点球规则">足球里点球规则</button>
+          </div>
+          <div class="form-label">API 智能问答</div>
           <form class="chat-form" id="chatForm">
-            <textarea id="questionInput" placeholder="输入问题；留空可语音输入"></textarea>
-            <button class="send-btn" id="sendBtn" type="submit">交互</button>
+            <textarea id="questionInput" placeholder="问视频片段、球员背景或足球规则" required></textarea>
+            <button class="send-btn" id="sendBtn" type="submit">智能问答</button>
+          </form>
+          <div class="form-label">语音/文字交互演示</div>
+          <form class="chat-form demo-form" id="demoForm">
+            <textarea id="demoInput" placeholder="输入演示问题；留空点击可尝试语音输入"></textarea>
+            <button class="send-btn demo-btn" id="demoBtn" type="submit">交互</button>
           </form>
         </div>
       </aside>
+    </section>
+
+    <section class="lower-grid">
+      <article class="transcript-panel" id="transcriptPanel">
+        <header class="panel-head">
+          <h2 class="panel-title">字幕时间轴</h2>
+          <span class="pill" id="cueCount">0 条</span>
+        </header>
+        <div class="transcript" id="transcript"></div>
+      </article>
     </section>
   </main>
 
@@ -585,6 +714,8 @@
     const chatLog = document.getElementById("chatLog");
     const questionInput = document.getElementById("questionInput");
     const sendBtn = document.getElementById("sendBtn");
+    const demoInput = document.getElementById("demoInput");
+    const demoBtn = document.getElementById("demoBtn");
     const teamSelect = document.getElementById("teamSelect");
     const statusDot = document.getElementById("statusDot");
     const apiStatus = document.getElementById("apiStatus");
@@ -797,6 +928,16 @@
       }).filter(Boolean);
     }
 
+    function parseCommentaryJson(items) {
+      return (Array.isArray(items) ? items : []).map((item, index) => ({
+        index: index + 1,
+        start: Number(item.start) || 0,
+        end: Number(item.end) || Number(item.start) + 4 || 4,
+        text: String(item.text || "").trim(),
+        emotion: item.emotion || ""
+      })).filter(cue => cue.text && cue.end >= cue.start);
+    }
+
     function currentCue() {
       const now = video.currentTime || 0;
       return cues.find(cue => cue.start <= now && cue.end >= now) || null;
@@ -824,6 +965,36 @@
       apiStatus.textContent = label;
     }
 
+    function renderTranscript() {
+      document.getElementById("cueCount").textContent = `${cues.length} 条`;
+      document.getElementById("transcript").innerHTML = cues.map(cue => `
+        <button class="cue" type="button" data-cue="${cue.index}">
+          <span class="cue-time">${formatTime(cue.start)}</span>
+          <span class="cue-text">${esc(cue.text)}</span>
+        </button>
+      `).join("");
+      document.querySelectorAll(".cue").forEach(button => {
+        button.addEventListener("click", () => {
+          const hit = cues.find(cue => cue.index === Number(button.dataset.cue));
+          if (!hit) return;
+          video.currentTime = hit.start + 0.05;
+          video.play();
+        });
+      });
+      const events = cues.filter(cue => /进球|打门|梅西|战术|防线|包夹/.test(cue.text));
+      document.getElementById("eventStrip").innerHTML = events.map(cue => `
+        <button class="event-btn" type="button" data-cue="${cue.index}">${formatTime(cue.start)} ${esc(cue.text)}</button>
+      `).join("");
+      document.querySelectorAll(".event-btn").forEach(button => {
+        button.addEventListener("click", () => {
+          const hit = cues.find(cue => cue.index === Number(button.dataset.cue));
+          if (!hit) return;
+          video.currentTime = hit.start + 0.05;
+          video.play();
+        });
+      });
+    }
+
     function updateVideoState() {
       const now = video.currentTime || 0;
       const cue = currentCue();
@@ -831,7 +1002,10 @@
       document.getElementById("currentTime").textContent = formatTime(now);
       document.getElementById("contextTime").textContent = formatTime(now);
       document.getElementById("activeCaption").textContent = activeDemoCaption ? demoCaption.text : (cue ? cue.text : "当前没有字幕");
-      document.getElementById("captionMode").textContent = activeDemoCaption ? "交互回复" : "字幕同步";
+      document.querySelectorAll(".cue").forEach(button => {
+        const hit = cues.find(item => item.index === Number(button.dataset.cue));
+        button.classList.toggle("active", Boolean(hit && hit.start <= now && hit.end >= now));
+      });
     }
 
     function renderTeams() {
@@ -906,18 +1080,28 @@
       }
 
       if (/谁.*进球|进球.*谁|谁进|goal|scored/.test(lower)) {
-        const goal = eventHits.find(item => /进球|破门|球进|打进/.test(item.text));
-        if (goal) return `刚才最关键的信息是：${goal.text}`;
+        const goal = eventHits.find(item => /进球|破门|球进|打进/.test(item.text))
+          || cues.find(item => /梅西.*球进|球进了|打进/.test(item.text));
+        if (goal) return `刚刚进球的是梅西。解说里对应的信息是：${goal.text}`;
         const latest = eventHits[0] || cue || near.at(-1);
         return latest
           ? `这段暂时没有明确出现“谁进球”的信息。刚才更像是在推进比赛描述：${latest.text}`
           : "现在还没有足够的比赛内容可以判断是谁进球。你可以继续播放一小段，我会跟着当前时间回答。";
       }
 
-      if (/战术|变化|阵型|防线|压迫|包夹/.test(question)) {
+      if (/战术|变化|阵型|防线|压迫|包夹|局面|形势/.test(question)) {
         const tactical = eventHits.length ? eventHits : near.slice(-5);
-        if (!tactical.length) return "这段还没有足够的战术信息。继续播放后，我可以根据当前比赛进程帮你判断压迫、推进和防守变化。";
-        return `这段比较值得注意的是：${tactical.map(item => item.text).join("；")}。整体看，重点在进攻推进、边路覆盖和防守站位变化。`;
+        if (!tactical.length) {
+          const summary = cues.filter(item => /阿根廷|阿尔及利亚|梅西|领先|防线|进球/.test(item.text)).slice(0, 8);
+          return summary.length
+            ? `目前局面可以概括为：${summary.map(item => item.text).join("；")}。阿根廷通过梅西的终结取得领先，阿尔及利亚主要依靠紧凑防线和中场逼抢限制推进。`
+            : "这段还没有足够的战术信息。继续播放后，我可以根据当前比赛进程帮你判断压迫、推进和防守变化。";
+        }
+        return `目前局面比较值得注意的是：${tactical.map(item => item.text).join("；")}。整体看，阿根廷在控球推进和梅西回撤接应上更主动，阿尔及利亚则依靠紧凑防线和中场逼抢制造拦截机会。`;
+      }
+
+      if (/点球|penalty/.test(lower)) {
+        return "点球通常发生在防守方在本方禁区内犯规时，由进攻方在点球点主罚。主罚前守门员必须留在球门线上，其他球员要在禁区外、点球点后方并保持规定距离；球被踢并明显移动后比赛恢复。";
       }
 
       if (selected && /球队|背景|阵容|教练/.test(question)) {
@@ -951,6 +1135,7 @@
         teamId: teamSelect.value,
         activeSubtitle: currentCue(),
         nearbySubtitles: nearbyCues(),
+        commentaryCues: cues,
         history: previousMessages(6)
       };
     }
@@ -970,15 +1155,16 @@
         : nearbyCues().map(cue => `[${formatTime(cue.start)}-${formatTime(cue.end)}] ${cue.text}`).join("\n");
       const playerHits = playersForQuestion(question).map(({ team, player }) => `- ${playerSummary(player, team)}`).join("\n");
       const teamText = selected ? `${selected.nameZh || selected.country}: ${selected.currentZh || selected.storyZh || selected.currentEn || ""}` : "未手动选择球队。";
+      const fullCommentary = cues.map(cue => `[${formatTime(cue.start)}-${formatTime(cue.end)}] ${cue.text}`).join("\n");
       return [
         {
           role: "system",
-          content: "你是世界杯视频问答助手。请用中文直接给观众最终答案，语气自然简洁。问球员、队员、几号、身世、经历、俱乐部或国家队履历时，优先使用阵容背景；问刚才、这一段、进球或战术时，优先使用当前播放时间和附近字幕。不要说明你在依据页面数据或备用逻辑；证据不足时只说还不能确定。可以使用简洁 Markdown。"
+          content: "你是世界杯视频问答助手。请用中文直接给观众最终答案，语气自然简洁。问刚才、这一段、进球或局面时，优先使用交互视频 commentary.json 的时间轴和当前播放时间；问球员、队员、几号、身世、经历、俱乐部或国家队履历时，优先使用阵容背景；问足球规则时可以给出简洁规则解释。证据不足时只说还不能确定。可以使用简洁 Markdown。"
         },
         ...previousMessages(7),
         {
           role: "user",
-          content: `当前播放时间：${formatTime(video.currentTime || 0)}\n\n背景球队：\n${teamText}\n\n可能相关球员（回答球员/号码问题时优先）：\n${playerHits || "无"}\n\n附近字幕：\n${nearby || "无"}\n\n用户问题：${question}`
+          content: `当前播放时间：${formatTime(video.currentTime || 0)}\n\n背景球队：\n${teamText}\n\n可能相关球员（回答球员/号码问题时优先）：\n${playerHits || "无"}\n\n附近字幕：\n${nearby || "无"}\n\n交互视频 commentary.json 全量时间轴：\n${fullCommentary || "无"}\n\n用户问题：${question}`
         }
       ];
     }
@@ -1084,8 +1270,8 @@
       messages.push({ role: "assistant", content: DEMO_REPLY });
       renderMessage("assistant", DEMO_REPLY);
       setApiState("local", source === "voice" ? "语音演示模式" : "文字演示模式");
-      questionInput.value = "";
-      questionInput.focus();
+      demoInput.value = "";
+      demoInput.focus();
     }
 
     function startVoiceDemo() {
@@ -1104,8 +1290,8 @@
       recognition.lang = "zh-CN";
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
-      sendBtn.disabled = true;
-      sendBtn.textContent = "聆听";
+      demoBtn.disabled = true;
+      demoBtn.textContent = "聆听";
       setApiState("local", "等待语音输入");
       recognition.onresult = event => {
         const transcript = event.results?.[0]?.[0]?.transcript || "语音输入";
@@ -1116,14 +1302,14 @@
         runDemoInteraction("语音输入", "voice");
       };
       recognition.onend = () => {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "交互";
+        demoBtn.disabled = false;
+        demoBtn.textContent = "交互";
       };
       recognition.start();
     }
 
-    function handleInteractionSubmit() {
-      const typed = questionInput.value.trim();
+    function handleDemoSubmit() {
+      const typed = demoInput.value.trim();
       if (typed) {
         runDemoInteraction(typed, "text");
         return;
@@ -1133,20 +1319,35 @@
 
     async function init() {
       renderMessage("system", "2026FIFA看球伙伴已就位，问我这段比赛、球员或球队背景都可以。");
-      const [srtResponse, dataResponse] = await Promise.all([
-        fetch("assets/video/worldcup-commentary.srt"),
+      const [commentaryResponse, dataResponse] = await Promise.all([
+        fetch("assets/video/interaction-commentary.json"),
         fetch("worldcup_site.json")
       ]);
-      cues = parseSrt(await srtResponse.text());
+      cues = parseCommentaryJson(await commentaryResponse.json());
       siteData = await dataResponse.json();
+      renderTranscript();
       renderTeams();
       updateVideoState();
-      setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "演示模式·API代理已配置" : "演示模式");
+      setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式");
     }
 
     document.getElementById("chatForm").addEventListener("submit", event => {
       event.preventDefault();
-      handleInteractionSubmit();
+      ask(questionInput.value);
+    });
+
+    document.getElementById("demoForm").addEventListener("submit", event => {
+      event.preventDefault();
+      handleDemoSubmit();
+    });
+
+    document.querySelectorAll(".chip").forEach(button => {
+      button.addEventListener("click", () => ask(button.dataset.question));
+    });
+
+    document.getElementById("askCurrentBtn").addEventListener("click", () => {
+      const cue = currentCue();
+      ask(cue ? `解释一下 ${formatTime(cue.start)} 这一段：“${cue.text}”` : "解释一下当前这一段。");
     });
 
     document.getElementById("fullscreenBtn").addEventListener("click", () => {
@@ -1154,7 +1355,7 @@
       if (target.requestFullscreen) target.requestFullscreen();
     });
 
-    teamSelect.addEventListener("change", () => setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "演示模式·API代理已配置" : "演示模式"));
+    teamSelect.addEventListener("change", () => setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式"));
     video.addEventListener("timeupdate", updateVideoState);
     video.addEventListener("loadedmetadata", () => {
       document.getElementById("durationText").textContent = formatTime(video.duration || 0);

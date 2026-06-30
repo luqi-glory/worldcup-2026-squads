@@ -6,9 +6,9 @@ Open `index.html` after publishing with GitHub Pages.
 
 ## Video chat page
 
-`video-chat.html` adds the interaction demo video, a live subtitle bar, and a right-side chat panel with a bounded, scrollable chat history. The full transcript list is intentionally not rendered on the page.
+`video-chat.html` adds the interaction demo video, a live subtitle bar, a subtitle timeline, smart recommendation chips, and a right-side chat panel with a bounded, scrollable chat history.
 
-The interaction button currently runs a demo flow: typed input is accepted directly; if the input is empty, the same button tries browser speech recognition and falls back to a demo voice input if speech recognition is unavailable. The demo writes `好的我看到了你的问题我等下再回答你` into the live subtitle bar and video subtitle track shortly after the user input.
+The API smart Q&A form keeps the original RAG-style flow and sends the current playback time plus `assets/video/interaction-commentary.json` context to the configured endpoint. The separate voice/text demo form runs the hard-coded interaction flow: typed input is accepted directly; if the input is empty, the same demo button tries browser speech recognition and falls back to a demo voice input if speech recognition is unavailable. The demo writes `好的我看到了你的问题我等下再回答你` into the live subtitle bar and video subtitle track shortly after the user input.
 
 The speech entry uses the browser Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`). It needs a user click to start, and browser support varies, so the page keeps a text-input fallback.
 
@@ -32,6 +32,6 @@ For local development, run the DeepSeek bridge and open the page from that serve
 python tools\video_chat_server.py --host 127.0.0.1 --port 8765
 ```
 
-The bridge reads `assets/video/worldcup-commentary.srt`, `worldcup_site.json`, and the local `F:\RAG\dpsk.py` module. If `dpsk.py` is not available, set `DEEPSEEK_API_KEY` and the server will use the same DeepSeek-compatible OpenAI client directly.
+The bridge reads `assets/video/interaction-commentary.json`, `worldcup_site.json`, and the local `F:\RAG\dpsk.py` module. If `dpsk.py` is not available, set `DEEPSEEK_API_KEY` and the server will use the same DeepSeek-compatible OpenAI client directly.
 
 The interaction demo video is compressed below the normal GitHub single-file limit so GitHub Pages can publish the real `.mp4` directly from the `gh-pages` branch.
