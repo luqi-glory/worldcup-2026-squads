@@ -73,16 +73,33 @@
       min-height: 420px;
       padding: 80px min(5vw, 64px) 36px;
     }
+    .hero-bg-video,
+    .hero-bg-video-fill {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .hero-bg-video-fill {
+      object-fit: cover;
+      object-position: center center;
+      filter: blur(18px) saturate(1.08);
+      opacity: .5;
+      transform: scale(1.04);
+      z-index: -4;
+    }
+    .hero-bg-video {
+      object-fit: contain;
+      object-position: center center;
+      z-index: -3;
+    }
     .hero::before {
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(110deg, rgba(7,11,24,.92), rgba(7,11,24,.48)),
-        url("assets/image.png");
-      background-size: cover;
-      background-position: center center;
-      opacity: .82;
+      background: linear-gradient(110deg, rgba(7,11,24,.82), rgba(7,11,24,.36));
+      opacity: .88;
       z-index: -2;
     }
     .hero::after {
@@ -319,14 +336,17 @@
       border-radius: 10px;
       padding: 18px;
       min-height: 185px;
+      min-width: 0;
+      overflow: hidden;
       background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.045));
       box-shadow: 0 18px 42px rgba(0,0,0,.16);
       transition: transform .2s ease, border-color .2s ease, background .2s ease;
     }
     .team-card:hover { transform: translateY(-4px); border-color: rgba(245,196,81,.42); }
     .team-card.active { border-color: rgba(94,234,212,.85); background: linear-gradient(180deg, rgba(94,234,212,.16), rgba(255,255,255,.06)); }
-    .team-top { display: flex; justify-content: space-between; gap: 14px; align-items: start; }
-    .team-card h3 { margin: 0; font-size: 23px; line-height: 1.05; letter-spacing: -.02em; }
+    .team-top { display: flex; justify-content: space-between; gap: 14px; align-items: start; min-width: 0; }
+    .team-top > div { min-width: 0; }
+    .team-card h3 { margin: 0; font-size: 22px; line-height: 1.08; letter-spacing: 0; overflow-wrap: anywhere; }
     .alt-name { color: var(--muted); font-size: 12px; margin-top: 5px; min-height: 16px; }
     .pill {
       display: inline-flex; align-items: center; justify-content: center;
@@ -334,9 +354,9 @@
       color: #dbeafe; background: rgba(96,165,250,.14); border: 1px solid rgba(96,165,250,.22);
       font-size: 12px; white-space: nowrap;
     }
-    .team-meta { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 14px 0; }
-    .position-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; }
-    .position-row span { border-radius: 14px; padding: 8px; background: rgba(255,255,255,.06); color: var(--muted); font-size: 11px; }
+    .team-meta { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 14px 0; overflow-wrap: anywhere; }
+    .position-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 7px; }
+    .position-row span { min-width: 0; border-radius: 14px; padding: 8px; background: rgba(255,255,255,.06); color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
     .position-row b { display: block; color: var(--ink); font-size: 18px; }
     .roster {
       display: grid;
@@ -478,11 +498,16 @@
     </div>
   </nav>
   <header class="hero">
+    <video class="hero-bg-video-fill" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+      <source src="assets/hero-video.mp4" type="video/mp4">
+    </video>
+    <video class="hero-bg-video" autoplay muted loop playsinline preload="metadata">
+      <source src="assets/hero-video.mp4" type="video/mp4">
+    </video>
     <div class="hero-grid">
       <section>
         <span class="eyebrow" id="eyebrow">智能赛事解说</span>
         <h1 id="pageTitle"><img class="hero-title-logo" src="assets/SM-logo.svg" alt="SM logo"><span id="pageTitleText">2026 世界杯智能解说</span></h1>
-        <p class="lead" id="leadText">围绕比赛视频、实时字幕、球员资料和 RAG 问答，构建可演示、可交互的世界杯智能解说体验。</p>
         <div class="hero-actions">
           <a class="primary" href="#matchCenter" id="ctaResults">Open match center</a>
           <a class="secondary" href="#teamsGrid" id="ctaExplore">Explore squads</a>
@@ -562,14 +587,14 @@
     const data = window.WORLDCUP_DATA;
     const copy = {
       en: {
-        brand: "2026 世界杯智能解说",
+        brand: "2026 World Cup AI Commentary",
         navResults: "Results",
         navTeams: "Teams",
         navPlayers: "Players",
         navVideo: "Video Chat",
         eyebrow: "AI commentary cockpit",
-        title: "2026 世界杯智能解说",
-        lead: "Explore match video, live subtitles, player context, and RAG-powered football Q&A in one interactive World Cup commentary experience.",
+        title: "2026 World Cup AI Commentary",
+        lead: "",
         results: "Open match center",
         explore: "Explore squads",
         openBoard: "Open roster board",
@@ -630,7 +655,7 @@
         navVideo: "视频问答",
         eyebrow: "智能赛事解说",
         title: "2026 世界杯智能解说",
-        lead: "围绕比赛视频、实时字幕、球员资料和 RAG 问答，构建可演示、可交互的世界杯智能解说体验。",
+        lead: "",
         results: "打开赛果中心",
         explore: "浏览球队",
         openBoard: "打开阵容看板",
@@ -846,7 +871,6 @@
       $("#navVideo").textContent = t("navVideo");
       $("#eyebrow").textContent = t("eyebrow");
       $("#pageTitleText").textContent = t("title");
-      $("#leadText").textContent = t("lead");
       $("#ctaResults").textContent = t("results");
       $("#ctaExplore").textContent = t("explore");
       $("#ctaPlayers").textContent = t("openBoard");

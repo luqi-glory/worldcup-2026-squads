@@ -8,7 +8,7 @@ Open `index.html` after publishing with GitHub Pages.
 
 `video-chat.html` adds the interaction demo video, a live subtitle bar, a subtitle timeline, smart recommendation chips, and a right-side chat panel with a bounded, scrollable chat history.
 
-The API smart Q&A form keeps the original RAG-style flow and sends the current playback time plus `assets/video/interaction-commentary.json` context to the configured endpoint. The separate voice/text demo form runs the hard-coded interaction flow: typed input is accepted directly; if the input is empty, the same demo button tries browser speech recognition and falls back to a demo voice input if speech recognition is unavailable. The demo writes `好的我看到了你的问题我等下再回答你` into the live subtitle bar and video subtitle track shortly after the user input.
+The interaction panel keeps one shared input box with a mode toggle. API smart Q&A keeps the original RAG-style flow and sends the current playback time plus `assets/video/interaction-commentary.json` context to the configured endpoint. Voice/text demo mode runs the hard-coded interaction flow: typed input is accepted directly; if the input is empty, the same send button tries browser speech recognition and falls back to a demo voice input if speech recognition is unavailable. The demo writes `好的我看到了您的问题，我稍后回复您` into the live subtitle bar and video subtitle track shortly after the user input.
 
 The speech entry uses the browser Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`). It needs a user click to start, and browser support varies, so the page keeps a text-input fallback.
 
