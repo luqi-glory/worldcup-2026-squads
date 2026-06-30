@@ -34,4 +34,4 @@ python tools\video_chat_server.py --host 127.0.0.1 --port 8765
 
 The bridge reads `assets/video/worldcup-commentary.srt`, `worldcup_site.json`, and the local `F:\RAG\dpsk.py` module. If `dpsk.py` is not available, set `DEEPSEEK_API_KEY` and the server will use the same DeepSeek-compatible OpenAI client directly.
 
-The interaction demo video is tracked with Git LFS because it is larger than the normal GitHub single-file limit. The Pages workflow uses `actions/checkout` with `lfs: true` so the deployed artifact contains the real `.mp4` instead of an LFS pointer.
+The interaction demo video is compressed below the normal GitHub single-file limit so GitHub Pages can publish the real `.mp4` directly from the `gh-pages` branch.
