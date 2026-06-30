@@ -475,6 +475,45 @@
       background: rgba(0,0,0,.18);
       font-size: 13px;
     }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .footer-copy {
+      display: grid;
+      gap: 8px;
+      line-height: 1.55;
+    }
+    .qr-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+    }
+    .qr-card img {
+      width: 86px;
+      height: 86px;
+      border-radius: 6px;
+      background: #fff;
+      padding: 6px;
+    }
+    .qr-card b {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .qr-card span {
+      display: block;
+      max-width: 190px;
+      line-height: 1.45;
+    }
     footer a { color: #dbeafe; text-decoration: none; }
     @media (max-width: 1100px) {
       .hero-grid, .roster, .scoreboard-layout { grid-template-columns: 1fr; }
@@ -500,6 +539,8 @@
       .match-team.away { justify-content: start; text-align: left; }
       .score-box { width: 100%; }
       .players.list .player-card { grid-template-columns: 92px 1fr; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+      .qr-card { width: 100%; justify-content: space-between; }
     }
   </style>
 </head>
@@ -605,6 +646,18 @@
       </section>
     </section>
   </main>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-copy">
+        <span>2026 World Cup smart commentary and squad browser.</span>
+        <a href="https://luqi-glory.github.io/worldcup-2026-squads/">https://luqi-glory.github.io/worldcup-2026-squads/</a>
+      </div>
+      <div class="qr-card" aria-label="Site QR code">
+        <img src="assets/site-qr.svg" alt="QR code for the 2026 World Cup smart commentary site">
+        <span><b>Scan to open</b>手机扫码打开本站</span>
+      </div>
+    </div>
+  </footer>
   <aside class="drawer" id="drawer" aria-hidden="true">
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerName">
       <button class="ghost-btn drawer-close" id="drawerClose" type="button">Close</button>
