@@ -29,11 +29,12 @@ function cueLine(cue) {
 function buildMessages(payload) {
   const question = String(payload.question || "").trim();
   const nearby = Array.isArray(payload.nearbySubtitles) ? payload.nearbySubtitles : [];
+  const commentary = Array.isArray(payload.commentaryCues) ? payload.commentaryCues : [];
   const history = Array.isArray(payload.history) ? payload.history : [];
   return [
     {
       role: "system",
-      content: "你是一个中文足球视频解说问答助手。请结合当前播放时间和字幕上下文简洁回答；证据不足时明确说不确定，不要编造。"
+      content: "你是一个中文足球视频解说问答助手。请结合交互视频 commentary.json 时间轴、当前播放时间和字幕上下文简洁回答；证据不足时明确说不确定，不要编造。问足球规则时可以直接给出简洁规则解释。"
     },
     ...history
       .filter(item => item && ["user", "assistant"].includes(item.role))
@@ -45,6 +46,7 @@ function buildMessages(payload) {
         `当前播放时间：${formatTime(payload.currentTime)}`,
         `当前字幕：${cueLine(payload.activeSubtitle) || "无"}`,
         `附近字幕：\n${nearby.map(cueLine).filter(Boolean).join("\n") || "无"}`,
+        `交互视频 commentary.json 全量时间轴：\n${commentary.map(cueLine).filter(Boolean).join("\n") || "无"}`,
         `用户问题：${question}`
       ].join("\n\n")
     }
