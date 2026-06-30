@@ -452,6 +452,7 @@
 
     .chip:focus-visible,
     .mini-btn:focus-visible,
+    .voice-btn:focus-visible,
     .send-btn:focus-visible {
       outline: 3px solid rgba(94, 234, 212, .26);
       outline-offset: 2px;
@@ -459,7 +460,7 @@
 
     .chat-form {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto auto;
       gap: 9px;
       padding: 12px 14px 14px;
       border-top: 1px solid rgba(255, 255, 255, .1);
@@ -477,6 +478,52 @@
       padding: 11px 12px;
       outline: none;
       line-height: 1.42;
+    }
+
+    .voice-btn {
+      width: 52px;
+      min-width: 52px;
+      min-height: 48px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 12px;
+      color: var(--text);
+      background: rgba(255, 255, 255, .09);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .voice-btn span[aria-hidden="true"] {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .voice-btn.listening {
+      color: #06101d;
+      background: linear-gradient(135deg, var(--mint), var(--gold));
+      box-shadow: 0 0 0 0 rgba(94, 234, 212, .42);
+      animation: listenPulse 1.25s ease-out infinite;
+    }
+
+    .voice-btn:disabled {
+      opacity: .58;
+      cursor: wait;
+    }
+
+    .voice-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes listenPulse {
+      100% { box-shadow: 0 0 0 13px rgba(94, 234, 212, 0); }
     }
 
     .send-btn {
@@ -711,6 +758,10 @@
           </div>
           <form class="chat-form" id="chatForm">
             <textarea id="questionInput" placeholder="问视频片段、球员背景或足球规则" required></textarea>
+            <button class="voice-btn" id="voiceBtn" type="button" aria-label="语音输入" title="点击录音并转文字">
+              <span aria-hidden="true">&#127908;</span>
+              <span class="voice-label" id="voiceLabel">语音输入</span>
+            </button>
             <button class="send-btn" id="sendBtn" type="submit" aria-label="智能问答">
               <img src="assets/soccer-ball-icon.svg" alt="" aria-hidden="true">
               <span class="send-label" id="sendLabel">智能问答</span>
@@ -736,6 +787,7 @@
     const video = document.getElementById("matchVideo");
     const chatLog = document.getElementById("chatLog");
     const questionInput = document.getElementById("questionInput");
+    const voiceBtn = document.getElementById("voiceBtn");
     const sendBtn = document.getElementById("sendBtn");
     const sendLabel = document.getElementById("sendLabel");
     const modeLabel = document.getElementById("modeLabel");
@@ -755,6 +807,7 @@
     let demoCaption = null;
     let demoSubtitleCue = null;
     let recognition = null;
+    let listening = false;
     let interactionMode = "api";
 
     function esc(value) {
@@ -1234,6 +1287,7 @@
       if (pending || !question.trim()) return;
       pending = true;
       sendBtn.disabled = true;
+      voiceBtn.disabled = true;
       const cleanQuestion = question.trim();
       messages.push({ role: "user", content: cleanQuestion });
       renderMessage("user", cleanQuestion);
@@ -1260,6 +1314,7 @@
       } finally {
         pending = false;
         sendBtn.disabled = false;
+        voiceBtn.disabled = false;
         questionInput.value = "";
         questionInput.focus();
       }
@@ -1299,40 +1354,93 @@
       questionInput.focus();
     }
 
-    function startVoiceDemo() {
+    async function requestMicrophoneAccess() {
+      if (!navigator.mediaDevices?.getUserMedia) return;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    function resetVoiceButton() {
+      listening = false;
+      voiceBtn.disabled = false;
+      voiceBtn.classList.remove("listening");
+      voiceBtn.setAttribute("aria-label", "语音输入");
+      voiceBtn.title = "点击录音并转文字";
+    }
+
+    async function startVoiceInput() {
+      if (pending) return;
+      if (listening && recognition) {
+        recognition.abort();
+        resetVoiceButton();
+        return;
+      }
       if (!SpeechRecognition) {
-        renderMessage("system", "当前浏览器不支持 Web Speech API，已切换为演示语音输入。");
-        runDemoInteraction("语音输入", "voice");
+        renderMessage("system", "当前浏览器不支持语音识别，请使用 Chrome、Edge 或 Safari 等支持 Web Speech API 的浏览器。");
         return;
       }
       if (!window.isSecureContext) {
-        renderMessage("system", "语音识别通常需要 HTTPS 或 localhost，已切换为演示语音输入。");
-        runDemoInteraction("语音输入", "voice");
+        renderMessage("system", "语音输入需要 HTTPS 或 localhost 才能请求麦克风权限。");
         return;
       }
+
+      try {
+        await requestMicrophoneAccess();
+      } catch (error) {
+        renderMessage("system", "麦克风权限未开启，允许浏览器使用麦克风后再试一次。");
+        return;
+      }
+
       if (recognition) recognition.abort();
+      let finalTranscript = "";
+      let voiceError = "";
+
       recognition = new SpeechRecognition();
       recognition.lang = "zh-CN";
-      recognition.interimResults = false;
+      recognition.interimResults = true;
+      recognition.continuous = false;
       recognition.maxAlternatives = 1;
-      sendBtn.disabled = true;
-      sendBtn.setAttribute("aria-label", "聆听");
-      sendLabel.textContent = "聆听";
-      setApiState("local", "等待语音输入");
+      listening = true;
+      voiceBtn.classList.add("listening");
+      voiceBtn.setAttribute("aria-label", "正在录音，点击停止");
+      voiceBtn.title = "正在录音，点击停止";
+      setApiState("local", "正在听写语音");
+
       recognition.onresult = event => {
-        const transcript = event.results?.[0]?.[0]?.transcript || "语音输入";
-        runDemoInteraction(transcript, "voice");
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const transcript = event.results[i]?.[0]?.transcript || "";
+          if (event.results[i].isFinal) finalTranscript += transcript;
+          else interimTranscript += transcript;
+        }
+        questionInput.value = (finalTranscript + interimTranscript).trim();
       };
-      recognition.onerror = () => {
-        renderMessage("system", "语音识别未完成，已切换为演示语音输入。");
-        runDemoInteraction("语音输入", "voice");
+
+      recognition.onerror = event => {
+        voiceError = event.error || "unknown";
+        renderMessage("system", voiceError === "not-allowed" || voiceError === "service-not-allowed"
+          ? "麦克风权限被拒绝，请在浏览器地址栏里允许麦克风。"
+          : "语音识别没有完成，请靠近麦克风再试一次。");
       };
+
       recognition.onend = () => {
-        sendBtn.disabled = false;
-        sendBtn.setAttribute("aria-label", "交互");
-        sendLabel.textContent = "交互";
+        const transcript = finalTranscript.trim() || questionInput.value.trim();
+        resetVoiceButton();
+        if (voiceError) return;
+        if (!transcript) {
+          renderMessage("system", "没有识别到语音内容，请再点一次麦克风重试。");
+          return;
+        }
+        questionInput.value = transcript;
+        ask(transcript);
       };
-      recognition.start();
+
+      try {
+        recognition.start();
+      } catch (error) {
+        resetVoiceButton();
+        renderMessage("system", "语音识别启动失败，请刷新页面后再试。");
+      }
     }
 
     function handleDemoSubmit() {
@@ -1341,7 +1449,7 @@
         runDemoInteraction(typed, "text");
         return;
       }
-      startVoiceDemo();
+      startVoiceInput();
     }
 
     function updateInteractionMode() {
@@ -1384,6 +1492,8 @@
       updateInteractionMode();
       questionInput.focus();
     });
+
+    voiceBtn.addEventListener("click", startVoiceInput);
 
     document.querySelectorAll(".chip").forEach(button => {
       button.addEventListener("click", () => ask(button.dataset.question));
