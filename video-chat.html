@@ -999,7 +999,10 @@
     const chatConfig = window.VIDEO_CHAT_CONFIG || {};
     const chatEndpoint = resolveChatEndpoint();
     const DEMO_REPLY = "好的，我看到了您的问题，精彩之后稍后答复。";
-    const VOICE_REPLY = "稍后，即将为您带来精彩分析...";
+    const THINKING_REPLY = "稍后，即将为您带来精彩分析...";
+    const TYPED_RESPONSE_DELAY_MS = 2500;
+    const VOICE_THINKING_DELAY_MS = 1000;
+    const VOICE_FINAL_DELAY_MS = 700;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const keyEvents = [
       { id: "opening", time: 0, cueIndex: 0, kind: "build", title: "开场推进", text: "马丁内斯在禁区边缘观察，阿根廷从后场开始组织。", script: "开场阶段，马丁内斯把球分给罗梅罗，阿根廷先稳住节奏。", tag: "推进" },
@@ -1535,6 +1538,10 @@
       return headers;
     }
 
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     async function requestAssistant(question, endpoint) {
       const response = await fetch(endpoint, {
         method: "POST",
@@ -1557,18 +1564,19 @@
       messages.push({ role: "user", content: cleanQuestion });
       renderMessage("user", cleanQuestion);
       const endpoint = resolveChatEndpoint();
-      const thinking = renderMessage("system", endpoint ? "API 正在结合字幕和阵容上下文回答..." : "本地上下文正在检索...");
+      renderMessage("system", THINKING_REPLY);
+      const responseDelay = delay(TYPED_RESPONSE_DELAY_MS);
       setApiState(endpoint ? "ready" : "local", endpoint ? "API 已连接" : "本地上下文模式");
       try {
-        const answer = endpoint ? await requestAssistant(cleanQuestion, endpoint) : localAnswer(cleanQuestion);
-        thinking.remove();
+        const answerPromise = endpoint ? requestAssistant(cleanQuestion, endpoint) : Promise.resolve(localAnswer(cleanQuestion));
+        const [answer] = await Promise.all([answerPromise, responseDelay]);
         messages.push({ role: "assistant", content: answer });
         renderMessage("assistant", answer);
         setApiState(endpoint ? "ready" : "local", endpoint ? "API 已连接" : "本地上下文模式");
       } catch (error) {
         console.warn("Video chat API unavailable, using page context.", error);
         const fallback = localAnswer(cleanQuestion);
-        thinking.remove();
+        await responseDelay;
         if (!apiErrorNotified) {
           renderMessage("system", "API 请求失败，已临时切换到本地字幕和阵容上下文。");
           apiErrorNotified = true;
@@ -1688,7 +1696,7 @@
           : "语音识别没有完成，请靠近麦克风再试一次。");
       };
 
-      recognition.onend = () => {
+      recognition.onend = async () => {
         const transcript = finalTranscript.trim() || questionInput.value.trim();
         resetVoiceButton();
         if (voiceError) return;
@@ -1699,8 +1707,11 @@
         questionInput.value = "";
         messages.push({ role: "user", content: transcript });
         renderMessage("user", transcript);
-        messages.push({ role: "assistant", content: VOICE_REPLY });
-        renderMessage("assistant", VOICE_REPLY);
+        await delay(VOICE_THINKING_DELAY_MS);
+        renderMessage("system", THINKING_REPLY);
+        await delay(VOICE_FINAL_DELAY_MS);
+        messages.push({ role: "assistant", content: DEMO_REPLY });
+        renderMessage("assistant", DEMO_REPLY);
         setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式");
       };
 
