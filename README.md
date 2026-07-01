@@ -12,13 +12,26 @@ The interaction panel keeps one shared input box with a mode toggle. API smart Q
 
 The speech entry uses the browser Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`). It needs a user click to start, and browser support varies, so the page keeps a text-input fallback.
 
-The page can still use a real chat API whenever an endpoint is configured through `chat-config.js`, `window.VIDEO_CHAT_API_URL`, or the query string:
+The page can still use a real chat API whenever an endpoint is configured through the on-page API box, `chat-config.js`, `window.VIDEO_CHAT_API_URL`, browser `localStorage`, or the query string:
 
 ```text
 video-chat.html?api=https://your-proxy.example.com/chat
 ```
 
 GitHub Pages cannot run the local `/chat` bridge because it only serves static files. For the public page, deploy a small HTTPS proxy on Cloudflare Workers, Vercel, or another server, keep the model API key on that server, then set `apiUrl` to the proxy URL. Do not put private API keys in `chat-config.js`.
+
+For a single browser, open the GitHub Pages video page, paste the deployed HTTPS proxy URL into the API box in the right panel, and click `保存 API`. The URL is saved in that browser and the page will use the API on later visits.
+
+For every visitor, set the same proxy URL in `chat-config.js`:
+
+```js
+window.VIDEO_CHAT_CONFIG = {
+  apiUrl: "https://your-worker.example.workers.dev",
+  apiKey: "",
+  endpointType: "",
+  model: "deepseek-v4-pro"
+};
+```
 
 `tools/cloudflare-worker-video-chat.js` is a deployable Worker proxy for this. Set `DEEPSEEK_API_KEY` as a Worker secret, deploy the Worker, then open the GitHub Pages page with:
 

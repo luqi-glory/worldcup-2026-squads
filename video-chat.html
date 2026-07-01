@@ -393,6 +393,23 @@
       background: rgba(7, 11, 24, .32);
     }
 
+    .api-config {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .api-config .mini-btn {
+      min-height: 38px;
+    }
+
+    .api-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .control {
       width: 100%;
       min-height: 38px;
@@ -875,6 +892,10 @@
         min-height: 420px;
       }
 
+      .api-config {
+        grid-template-columns: 1fr;
+      }
+
     }
   </style>
 </head>
@@ -937,6 +958,12 @@
           <select class="control" id="teamSelect" aria-label="背景球队">
             <option value="">自动识别背景球队</option>
           </select>
+          <div class="api-config">
+            <input class="control" id="apiEndpointInput" type="url" inputmode="url" placeholder="https://your-worker.example.workers.dev">
+            <button class="mini-btn" id="saveApiBtn" type="button">保存 API</button>
+            <button class="mini-btn" id="clearApiBtn" type="button">清除</button>
+          </div>
+          <div class="api-note" id="apiEndpointNote">GitHub Pages 需填写公网 HTTPS API 代理地址；密钥只放在代理服务端。</div>
         </div>
         <div class="chat-log" id="chatLog" aria-live="polite"></div>
         <div class="event-board" id="eventBoard" aria-label="关键事件看板"></div>
@@ -990,6 +1017,10 @@
     const teamSelect = document.getElementById("teamSelect");
     const statusDot = document.getElementById("statusDot");
     const apiStatus = document.getElementById("apiStatus");
+    const apiEndpointInput = document.getElementById("apiEndpointInput");
+    const apiEndpointNote = document.getElementById("apiEndpointNote");
+    const saveApiBtn = document.getElementById("saveApiBtn");
+    const clearApiBtn = document.getElementById("clearApiBtn");
     const eventToggleBtn = document.getElementById("eventToggleBtn");
     const eventTimeline = document.getElementById("eventTimeline");
     const eventBoard = document.getElementById("eventBoard");
@@ -997,7 +1028,7 @@
     const chatTab = document.getElementById("chatTab");
     const boardTab = document.getElementById("boardTab");
     const chatConfig = window.VIDEO_CHAT_CONFIG || {};
-    const chatEndpoint = resolveChatEndpoint();
+    let chatEndpoint = resolveChatEndpoint();
     const DEMO_REPLY = "好的，我看到了您的问题，精彩之后稍后答复。";
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const keyEvents = [
@@ -1030,24 +1061,72 @@
       }[char]));
     }
 
+    function normalizeChatEndpoint(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      try {
+        const url = new URL(raw, location.origin);
+        const isLocalPage = ["localhost", "127.0.0.1", "::1", "[::1]"].includes(location.hostname);
+        if (url.protocol === "https:") return url.href;
+        if (isLocalPage && url.protocol === "http:") return url.href;
+        if (isLocalPage && url.origin === location.origin && url.pathname.startsWith("/")) return url.href;
+      } catch (error) {
+        return "";
+      }
+      return "";
+    }
+
     function resolveChatEndpoint() {
       const params = new URLSearchParams(location.search);
       const queryApiUrl = params.get("api");
-      if (queryApiUrl && /^https:\/\//i.test(queryApiUrl)) {
-        localStorage.setItem("VIDEO_CHAT_API_URL", queryApiUrl.trim());
+      const normalizedQueryUrl = normalizeChatEndpoint(queryApiUrl);
+      if (normalizedQueryUrl) {
+        localStorage.setItem("VIDEO_CHAT_API_URL", normalizedQueryUrl);
       }
-      const configured = String(
+      const configured = normalizeChatEndpoint(
         window.VIDEO_CHAT_API_URL ||
-        chatConfig.apiUrl ||
         localStorage.getItem("VIDEO_CHAT_API_URL") ||
+        chatConfig.apiUrl ||
         ""
-      ).trim();
+      );
       if (configured) return configured;
       const localHosts = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
       if (localHosts.has(location.hostname) && location.port) {
         return `${location.origin}/chat`;
       }
       return "";
+    }
+
+    function refreshApiEndpointUi() {
+      chatEndpoint = resolveChatEndpoint();
+      if (apiEndpointInput) {
+        apiEndpointInput.value = localStorage.getItem("VIDEO_CHAT_API_URL") || chatEndpoint || "";
+      }
+      if (apiEndpointNote) {
+        apiEndpointNote.textContent = chatEndpoint
+          ? "已配置公网 API 代理，GitHub 页面会优先使用 API 交互。"
+          : "GitHub Pages 需填写公网 HTTPS API 代理地址；密钥只放在代理服务端。";
+      }
+      setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式");
+    }
+
+    function saveApiEndpoint() {
+      const endpoint = normalizeChatEndpoint(apiEndpointInput?.value);
+      if (!endpoint) {
+        renderMessage("system", "请输入公网 HTTPS API 代理地址，例如 Cloudflare Worker 或 Vercel Function。");
+        setApiState("local", "API 地址无效");
+        return;
+      }
+      localStorage.setItem("VIDEO_CHAT_API_URL", endpoint);
+      refreshApiEndpointUi();
+      renderMessage("system", "API 地址已保存，之后 GitHub 页面会优先使用该接口。");
+    }
+
+    function clearApiEndpoint() {
+      localStorage.removeItem("VIDEO_CHAT_API_URL");
+      if (apiEndpointInput) apiEndpointInput.value = "";
+      refreshApiEndpointUi();
+      renderMessage("system", "已清除浏览器中保存的 API 地址。");
     }
 
     function safeLink(url) {
@@ -1556,7 +1635,7 @@
       messages.push({ role: "user", content: cleanQuestion });
       renderMessage("user", cleanQuestion);
       const endpoint = resolveChatEndpoint();
-      const thinking = renderMessage("system", endpoint ? "API 正在结合字幕和阵容上下文回答..." : "本地上下文正在检索...");
+      const thinking = renderMessage("system", endpoint ? "稍后，即将为您带来精彩分析..." : "本地上下文正在检索...");
       setApiState(endpoint ? "ready" : "local", endpoint ? "API 已连接" : "本地上下文模式");
       try {
         const answer = endpoint ? await requestAssistant(cleanQuestion, endpoint) : localAnswer(cleanQuestion);
@@ -1739,7 +1818,7 @@
       renderTranscript();
       renderTeams();
       updateVideoState();
-      setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式");
+      refreshApiEndpointUi();
     }
 
     document.getElementById("chatForm").addEventListener("submit", event => {
@@ -1755,6 +1834,15 @@
       interactionMode = interactionMode === "api" ? "demo" : "api";
       updateInteractionMode();
       questionInput.focus();
+    });
+
+    saveApiBtn.addEventListener("click", saveApiEndpoint);
+    clearApiBtn.addEventListener("click", clearApiEndpoint);
+    apiEndpointInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        saveApiEndpoint();
+      }
     });
 
     chatTab.addEventListener("click", () => setBoardMode("chat"));
@@ -1787,6 +1875,7 @@
     video.addEventListener("play", updateVideoState);
     video.addEventListener("timeupdate", updateVideoState);
     setBoardMode("chat");
+    refreshApiEndpointUi();
     updateInteractionMode();
 
     init().catch(error => {
