@@ -58,15 +58,15 @@
     .nav-links { display: flex; gap: 12px; color: var(--muted); font-size: 13px; }
     .nav-links a { text-decoration: none; padding: 8px 10px; border-radius: 999px; }
     .nav-links a:hover { color: var(--ink); background: rgba(255,255,255,.08); }
-    .language-toggle, .view-toggle {
+    .language-toggle {
       display: inline-flex; gap: 4px; padding: 4px;
       border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.06);
     }
-    .lang-btn, .view-btn {
+    .lang-btn {
       border: 0; border-radius: 999px; min-height: 32px; padding: 0 12px;
       color: var(--muted); background: transparent;
     }
-    .lang-btn.active, .view-btn.active { color: #06101d; background: var(--ink); }
+    .lang-btn.active { color: #06101d; background: var(--ink); }
     .hero {
       position: relative;
       overflow: hidden;
@@ -162,7 +162,7 @@
       top: 64px;
       z-index: 15;
       display: grid;
-      grid-template-columns: minmax(260px, 1.25fr) repeat(3, minmax(150px, .55fr)) auto;
+      grid-template-columns: minmax(260px, 1.25fr) repeat(3, minmax(150px, .55fr));
       gap: 10px;
       padding: 12px;
       margin-bottom: 26px;
@@ -400,7 +400,6 @@
     .quick-fact b { display: block; font-size: 22px; }
     .quick-fact span { color: var(--muted); font-size: 12px; }
     .players { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
-    .players.list { grid-template-columns: 1fr; }
     .player-card {
       overflow: hidden;
       border: 1px solid rgba(255,255,255,.12);
@@ -410,10 +409,8 @@
       transition: transform .2s ease, border-color .2s ease;
     }
     .player-card:hover { transform: translateY(-4px); border-color: rgba(94,234,212,.36); }
-    .players.list .player-card { display: grid; grid-template-columns: 118px 1fr; min-height: 118px; }
     .portrait-wrap { position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(96,165,250,.18), rgba(245,196,81,.16)); }
     .portrait { width: 100%; aspect-ratio: 1 / 1.04; object-fit: cover; display: block; }
-    .players.list .portrait { height: 100%; aspect-ratio: auto; }
     .portrait.missing { object-fit: contain; padding: 24px; opacity: .9; }
     .player-no {
       position: absolute; left: 12px; top: 12px;
@@ -538,7 +535,6 @@
       .match-scoreline { grid-template-columns: 1fr; gap: 8px; }
       .match-team.away { justify-content: start; text-align: left; }
       .score-box { width: 100%; }
-      .players.list .player-card { grid-template-columns: 92px 1fr; }
       .footer-inner { align-items: flex-start; flex-direction: column; }
       .qr-card { width: 100%; justify-content: space-between; }
     }
@@ -614,10 +610,6 @@
       <select class="control" id="groupFilter"></select>
       <select class="control" id="positionFilter"></select>
       <select class="control" id="sortFilter"></select>
-      <div class="view-toggle" aria-label="View mode">
-        <button class="view-btn active" type="button" data-view="grid" id="gridView">Grid</button>
-        <button class="view-btn" type="button" data-view="list" id="listView">List</button>
-      </div>
     </section>
     <section class="section-head">
       <div>
@@ -731,8 +723,6 @@
         details: "Details",
         saved: "Saved",
         save: "Save",
-        grid: "Grid",
-        list: "List",
       },
       zh: {
         brand: "2026 世界杯智能解说",
@@ -793,8 +783,6 @@
         details: "详情",
         saved: "已收藏",
         save: "收藏",
-        grid: "网格",
-        list: "列表",
       }
     };
     const positionNames = {
@@ -817,7 +805,6 @@
     const teamById = new Map(data.teams.map(team => [team.id, team]));
     let selectedId = data.teams.find(team => team.players.length)?.id || data.teams[0]?.id;
     let lang = localStorage.getItem("worldcupLang") || "zh";
-    let view = localStorage.getItem("worldcupView") || "grid";
     let saved = new Set(JSON.parse(localStorage.getItem(savedKey) || "[]"));
 
     function esc(value) {
@@ -1000,8 +987,6 @@
       $("#teamsCopy").textContent = t("teamsCopy");
       $("#playersKicker").textContent = t("playersKicker");
       $("#playersTitle").textContent = t("playersTitle");
-      $("#gridView").textContent = t("grid");
-      $("#listView").textContent = t("list");
       document.querySelectorAll(".lang-btn").forEach(button => button.classList.toggle("active", button.dataset.lang === lang));
       const currentGroup = groupFilter.value || "all";
       const groups = [...new Set(data.teams.map(team => team.group))];
@@ -1013,7 +998,6 @@
       const currentSort = sortFilter.value || "number";
       sortFilter.innerHTML = `<option value="number">${esc(t("sortDefault"))}</option><option value="name">${esc(t("sortName"))}</option><option value="caps">${esc(t("sortCaps"))}</option>`;
       sortFilter.value = ["number","name","caps"].includes(currentSort) ? currentSort : "number";
-      document.querySelectorAll(".view-btn").forEach(button => button.classList.toggle("active", button.dataset.view === view));
     }
     function renderTeams(teams) {
       teamsEl.innerHTML = teams.map(team => {
@@ -1045,7 +1029,7 @@
         [groupLabel(team.group), t("group")]
       ].map(([value, label]) => `<div class="quick-fact"><b>${esc(value)}</b><span>${esc(label)}</span></div>`).join("");
       $("#rosterCount").textContent = lang === "zh" ? `${players.length} / ${team.playerCount}${t("players")}` : `${players.length} / ${team.playerCount} ${t("players")}`;
-      playersEl.classList.toggle("list", view === "list");
+      playersEl.classList.remove("list");
       if (!players.length) {
         playersEl.innerHTML = `<div class="empty">${esc(t("noPlayers"))}</div>`;
         return;
@@ -1112,17 +1096,11 @@
       localStorage.setItem("worldcupLang", lang);
       render();
     }));
-    document.querySelectorAll(".view-btn").forEach(button => button.addEventListener("click", () => {
-      view = button.dataset.view;
-      localStorage.setItem("worldcupView", view);
-      render();
-    }));
     [matchGroupFilter, searchEl, groupFilter, positionFilter, sortFilter].forEach(el => el.addEventListener("input", render));
     $("#drawerClose").addEventListener("click", () => { drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); });
     drawer.addEventListener("click", event => { if (event.target === drawer) $("#drawerClose").click(); });
     document.addEventListener("keydown", event => { if (event.key === "Escape") $("#drawerClose").click(); });
     if (!copy[lang]) lang = "en";
-    if (!["grid","list"].includes(view)) view = "grid";
     render();
   </script>
 </body>

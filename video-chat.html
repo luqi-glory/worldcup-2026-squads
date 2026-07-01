@@ -175,12 +175,12 @@
       background: #020617;
     }
 
-    .event-overlay-toggle {
-      display: flex;
+    .event-action-bar {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
       gap: 12px;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-top: 1px solid rgba(255, 255, 255, .1);
       background: rgba(2, 6, 23, .74);
     }
@@ -214,16 +214,49 @@
       padding: 0 8px;
       transform: translateX(-50%);
       color: #06101d;
-      background: var(--gold);
+      background: var(--event-color, var(--gold));
       font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
-      box-shadow: 0 0 0 4px rgba(245, 196, 81, .18), 0 0 18px rgba(245, 196, 81, .48);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--event-color, var(--gold)) 24%, transparent), 0 0 18px color-mix(in srgb, var(--event-color, var(--gold)) 58%, transparent);
+    }
+
+    .event-marker[data-kind="build"],
+    .event-card[data-kind="build"] {
+      --event-color: var(--blue);
+    }
+
+    .event-marker[data-kind="shape"],
+    .event-card[data-kind="shape"] {
+      --event-color: #a78bfa;
+    }
+
+    .event-marker[data-kind="defense"],
+    .event-card[data-kind="defense"] {
+      --event-color: var(--mint);
+    }
+
+    .event-marker[data-kind="attack"],
+    .event-card[data-kind="attack"] {
+      --event-color: var(--gold);
     }
 
     .event-marker[data-kind="goal"] {
-      background: var(--rose);
-      box-shadow: 0 0 0 4px rgba(251, 113, 133, .18), 0 0 18px rgba(251, 113, 133, .5);
+      --event-color: var(--rose);
+    }
+
+    .event-card[data-kind="goal"] {
+      --event-color: var(--rose);
+    }
+
+    .event-marker[data-kind="review"],
+    .event-card[data-kind="review"] {
+      --event-color: #fb923c;
+    }
+
+    .event-marker[data-kind="summary"],
+    .event-card[data-kind="summary"] {
+      --event-color: #c4b5fd;
     }
 
     .event-marker.active {
@@ -268,13 +301,11 @@
 
     .caption-bar {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: auto minmax(0, 1fr);
       align-items: center;
       gap: 12px;
-      padding: 12px 14px;
-      border-top: 1px solid rgba(255, 255, 255, .1);
+      min-width: 0;
       color: #dbeafe;
-      background: rgba(2, 6, 23, .78);
     }
 
     .time-badge,
@@ -759,18 +790,19 @@
 
     .event-card {
       width: 100%;
-      border: 1px solid rgba(255, 255, 255, .12);
+      border: 1px solid color-mix(in srgb, var(--event-color, var(--gold)) 42%, transparent);
+      border-left: 5px solid var(--event-color, var(--gold));
       border-radius: 8px;
       padding: 11px;
       color: #e5edf9;
-      background: rgba(255, 255, 255, .07);
+      background: color-mix(in srgb, var(--event-color, var(--gold)) 13%, rgba(255, 255, 255, .06));
       text-align: left;
     }
 
     .event-card:hover,
     .event-card.active {
-      border-color: rgba(94, 234, 212, .42);
-      background: rgba(94, 234, 212, .11);
+      border-color: color-mix(in srgb, var(--event-color, var(--gold)) 70%, rgba(255, 255, 255, .18));
+      background: color-mix(in srgb, var(--event-color, var(--gold)) 22%, rgba(255, 255, 255, .07));
     }
 
     .event-card-top {
@@ -782,7 +814,7 @@
     }
 
     .event-card-title {
-      color: #fff7d1;
+      color: var(--event-color, #fff7d1);
       font-weight: 850;
       overflow-wrap: anywhere;
     }
@@ -823,11 +855,13 @@
       }
 
       .stage-head,
+      .event-action-bar,
       .caption-bar,
       .chat-form {
         grid-template-columns: 1fr;
       }
 
+      .event-action-bar,
       .caption-bar {
         align-items: start;
       }
@@ -873,13 +907,12 @@
           </video>
           <div class="event-timeline" id="eventTimeline" aria-label="关键事件时间轴"></div>
         </div>
-        <div class="event-overlay-toggle">
+        <div class="event-action-bar">
           <button class="mini-btn" id="eventToggleBtn" type="button" aria-pressed="false">显示关键事件</button>
-          <span class="pill">事件贴在视频轴上 · 点击可跳转</span>
-        </div>
-        <div class="caption-bar">
-          <span class="time-badge" id="currentTime">00:00</span>
-          <div class="caption-text" id="activeCaption">等待播放</div>
+          <div class="caption-bar">
+            <span class="time-badge" id="currentTime">00:00</span>
+            <div class="caption-text" id="activeCaption">等待播放</div>
+          </div>
           <button class="mini-btn" id="askCurrentBtn" type="button">问这一段</button>
         </div>
       </article>
@@ -1260,7 +1293,7 @@
       `;
       }).join("");
       eventBoard.innerHTML = keyEvents.map(event => `
-        <button class="event-card" type="button" data-event="${esc(event.id)}">
+        <button class="event-card" type="button" data-event="${esc(event.id)}" data-kind="${esc(event.kind)}">
           <span class="event-card-top">
             <span class="event-card-title">${esc(event.title)}</span>
             <span class="cue-time">${formatTime(event.time)}</span>
