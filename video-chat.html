@@ -998,7 +998,7 @@
     const boardTab = document.getElementById("boardTab");
     const chatConfig = window.VIDEO_CHAT_CONFIG || {};
     const chatEndpoint = resolveChatEndpoint();
-    const DEMO_REPLY = "好的我看到了您的问题，我稍后回复您";
+    const DEMO_REPLY = "好的，我看到了您的问题，精彩之后稍后答复。";
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const keyEvents = [
       { id: "opening", time: 0, cueIndex: 0, kind: "build", title: "开场推进", text: "马丁内斯在禁区边缘观察，阿根廷从后场开始组织。", script: "开场阶段，马丁内斯把球分给罗梅罗，阿根廷先稳住节奏。", tag: "推进" },
@@ -1460,7 +1460,7 @@
           : "当前字幕里还没有足够信息判断比分。";
       }
       if (cue) return `这个问题没有在已载入的球员或字幕上下文中直接命中。当前这一瞬间的重点是：${cue.text}`;
-      return "这个问题暂时没有在已载入的字幕或阵容资料中命中。可以问具体球员、球队、号码、进球或战术变化。";
+      return DEMO_REPLY;
     }
 
     function previousMessages(limit = 8) {
