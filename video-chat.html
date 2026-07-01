@@ -1400,6 +1400,16 @@
         .slice(0, 8);
     }
 
+    function hardcodedAnswer(question) {
+      const normalized = String(question || "").replace(/\s+/g, "");
+      if (normalized !== "阿根廷队采用的战术是什么") return "";
+      return [
+        "阿根廷这段更像是在打 **控球推进 + 梅西回撤串联 + 纵向直塞打身后** 的思路。",
+        "具体看，后场先通过马丁内斯、罗梅罗把球稳住，避免被阿尔及利亚的紧凑防线和中场逼抢直接切断。梅西不会一直顶在最前面，而是回撤到中路附近接应，把防守注意力吸出来，再让边路和肋部球员寻找纵深空间。",
+        "真正的关键点是迪马利亚那脚直塞长传：阿根廷不是一味横传，而是在对方防线前压和站位转换的一瞬间，直接把球打到防线身后。梅西随后完成终结，所以这套打法的核心可以概括为：先控节奏，再拉出空当，最后用直塞和个人终结解决问题。"
+      ].join("\n\n");
+    }
+
     function localAnswer(question) {
       const cue = currentCue();
       const near = nearbyCues(70, 25);
@@ -1568,7 +1578,12 @@
       const responseDelay = delay(TYPED_RESPONSE_DELAY_MS);
       setApiState(endpoint ? "ready" : "local", endpoint ? "API 已连接" : "本地上下文模式");
       try {
-        const answerPromise = endpoint ? requestAssistant(cleanQuestion, endpoint) : Promise.resolve(localAnswer(cleanQuestion));
+        const fixedAnswer = hardcodedAnswer(cleanQuestion);
+        const answerPromise = fixedAnswer
+          ? Promise.resolve(fixedAnswer)
+          : endpoint
+            ? requestAssistant(cleanQuestion, endpoint)
+            : Promise.resolve(localAnswer(cleanQuestion));
         const [answer] = await Promise.all([answerPromise, responseDelay]);
         messages.push({ role: "assistant", content: answer });
         renderMessage("assistant", answer);
