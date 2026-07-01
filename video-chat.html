@@ -175,6 +175,97 @@
       background: #020617;
     }
 
+    .event-overlay-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(2, 6, 23, .74);
+    }
+
+    .event-timeline {
+      display: none;
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 44px;
+      height: 62px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(2, 6, 23, .52);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, .28);
+      pointer-events: auto;
+      z-index: 3;
+    }
+
+    .event-timeline.visible {
+      display: block;
+    }
+
+    .event-marker {
+      position: absolute;
+      top: 5px;
+      min-width: 54px;
+      height: 24px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 8px;
+      transform: translateX(-50%);
+      color: #06101d;
+      background: var(--gold);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+      box-shadow: 0 0 0 4px rgba(245, 196, 81, .18), 0 0 18px rgba(245, 196, 81, .48);
+    }
+
+    .event-marker[data-kind="goal"] {
+      background: var(--rose);
+      box-shadow: 0 0 0 4px rgba(251, 113, 133, .18), 0 0 18px rgba(251, 113, 133, .5);
+    }
+
+    .event-marker.active {
+      background: var(--mint);
+      box-shadow: 0 0 0 5px rgba(94, 234, 212, .2), 0 0 22px rgba(94, 234, 212, .62);
+    }
+
+    .event-marker[data-row="1"] {
+      top: 33px;
+    }
+
+    .event-marker::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 9px);
+      width: 240px;
+      min-height: 66px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      padding: 10px 11px;
+      color: #e5edf9;
+      background: rgba(7, 11, 24, .94);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, .42);
+      content: attr(data-detail);
+      white-space: normal;
+      line-height: 1.45;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 650;
+      opacity: 0;
+      transform: translateX(-50%);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+
+    .event-marker:hover::after,
+    .event-marker:focus-visible::after {
+      opacity: 1;
+      transform: translate(-50%, -4px);
+    }
+
     .caption-bar {
       display: grid;
       grid-template-columns: auto minmax(0, 1fr) auto;
@@ -229,6 +320,28 @@
 
     .chat-head {
       align-items: start;
+    }
+
+    .panel-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .panel-tab {
+      min-height: 30px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 8px;
+      padding: 0 10px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .06);
+      font-size: 12px;
+    }
+
+    .panel-tab.active {
+      color: #06101d;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--gold), var(--mint));
+      font-weight: 850;
     }
 
     .chat-meta {
@@ -623,23 +736,62 @@
       font-size: 13px;
     }
 
-    .event-strip {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 12px 14px 14px;
-      border-top: 1px solid rgba(255, 255, 255, .1);
+    .event-board {
+      display: none;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px 14px;
+      gap: 10px;
     }
 
-    .event-btn {
-      flex: 0 0 auto;
-      min-height: 34px;
-      border: 1px solid rgba(245, 196, 81, .28);
+    .chat-panel.board-mode {
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .chat-panel.board-mode .chat-log,
+    .chat-panel.board-mode .chat-tools {
+      display: none;
+    }
+
+    .chat-panel.board-mode .event-board {
+      display: grid;
+    }
+
+    .event-card {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, .12);
       border-radius: 8px;
-      padding: 0 10px;
-      color: #fef3c7;
-      background: rgba(245, 196, 81, .1);
-      font-size: 12px;
+      padding: 11px;
+      color: #e5edf9;
+      background: rgba(255, 255, 255, .07);
+      text-align: left;
+    }
+
+    .event-card:hover,
+    .event-card.active {
+      border-color: rgba(94, 234, 212, .42);
+      background: rgba(94, 234, 212, .11);
+    }
+
+    .event-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .event-card-title {
+      color: #fff7d1;
+      font-weight: 850;
+      overflow-wrap: anywhere;
+    }
+
+    .event-card-text {
+      color: #cbd5e1;
+      line-height: 1.5;
+      font-size: 13px;
+      overflow-wrap: anywhere;
     }
 
     @media (max-width: 1120px) {
@@ -716,16 +868,20 @@
         </header>
         <div class="video-wrap" id="videoWrap">
           <video id="matchVideo" controls playsinline preload="metadata">
-            <source src="assets/video/interaction-demo.mp4" type="video/mp4">
+            <source src="assets/video/final-video-girl.mp4" type="video/mp4">
             <track src="assets/video/interaction-commentary.vtt" kind="subtitles" srclang="zh" label="中文" default>
           </video>
+          <div class="event-timeline" id="eventTimeline" aria-label="关键事件时间轴"></div>
+        </div>
+        <div class="event-overlay-toggle">
+          <button class="mini-btn" id="eventToggleBtn" type="button" aria-pressed="false">显示关键事件</button>
+          <span class="pill">事件贴在视频轴上 · 点击可跳转</span>
         </div>
         <div class="caption-bar">
           <span class="time-badge" id="currentTime">00:00</span>
           <div class="caption-text" id="activeCaption">等待播放</div>
           <button class="mini-btn" id="askCurrentBtn" type="button">问这一段</button>
         </div>
-        <div class="event-strip" id="eventStrip"></div>
       </article>
 
       <aside class="chat-panel">
@@ -737,7 +893,12 @@
               <span id="apiStatus">正在连接</span>
             </div>
           </div>
-          <span class="pill" id="contextTime">00:00</span>
+          <div>
+            <div class="panel-tabs" role="tablist" aria-label="右侧面板">
+              <button class="panel-tab active" id="chatTab" type="button">对话</button>
+              <button class="panel-tab" id="boardTab" type="button">看板</button>
+            </div>
+          </div>
         </header>
         <div class="team-context">
           <select class="control" id="teamSelect" aria-label="背景球队">
@@ -745,7 +906,8 @@
           </select>
         </div>
         <div class="chat-log" id="chatLog" aria-live="polite"></div>
-        <div>
+        <div class="event-board" id="eventBoard" aria-label="关键事件看板"></div>
+        <div class="chat-tools">
           <div class="form-label">智能推荐问答</div>
           <div class="chips">
             <button class="chip" type="button" data-question="刚刚是谁进球了">刚刚是谁进球了</button>
@@ -795,10 +957,28 @@
     const teamSelect = document.getElementById("teamSelect");
     const statusDot = document.getElementById("statusDot");
     const apiStatus = document.getElementById("apiStatus");
+    const eventToggleBtn = document.getElementById("eventToggleBtn");
+    const eventTimeline = document.getElementById("eventTimeline");
+    const eventBoard = document.getElementById("eventBoard");
+    const chatPanel = document.querySelector(".chat-panel");
+    const chatTab = document.getElementById("chatTab");
+    const boardTab = document.getElementById("boardTab");
     const chatConfig = window.VIDEO_CHAT_CONFIG || {};
     const chatEndpoint = resolveChatEndpoint();
     const DEMO_REPLY = "好的我看到了您的问题，我稍后回复您";
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const keyEvents = [
+      { id: "opening", time: 0, cueIndex: 0, kind: "build", title: "开场推进", text: "马丁内斯在禁区边缘观察，阿根廷从后场开始组织。", script: "开场阶段，马丁内斯把球分给罗梅罗，阿根廷先稳住节奏。", tag: "推进" },
+      { id: "shape", time: 11.76, cueIndex: 1, kind: "shape", title: "防线收紧", text: "阿尔及利亚防线站位紧凑，梅西回撤接应。", script: "阿尔及利亚的防线很紧，梅西回到中圈附近主动要球。", tag: "战术" },
+      { id: "left", time: 21.96, cueIndex: 2, kind: "build", title: "左路试探", text: "阿根廷在左路寻找空隙，但沙伊比贴防很紧。", script: "阿根廷改从左路试探，不过沙伊比的贴防没有给出空间。", tag: "试探" },
+      { id: "press", time: 33.44, cueIndex: 4, kind: "defense", title: "中场拦截", text: "本塔莱布完成拦截，阿尔及利亚抢回球权。", script: "这里本塔莱布完成关键拦截，阿尔及利亚把节奏拉回来了。", tag: "拦截" },
+      { id: "through", time: 41, cueIndex: 5, kind: "attack", title: "迪马利亚直塞", text: "迪马利亚送出直塞长传，撕开防线。", script: "关键来了，迪马利亚一脚直塞长传，直接打到防线身后。", tag: "直塞" },
+      { id: "goal", time: 45, cueIndex: 6, kind: "goal", title: "梅西破门", text: "梅西搓射破门，阿根廷取得领先。", script: "梅西搓射，球进了！阿根廷终于打破僵局，一比零领先。", tag: "进球" },
+      { id: "lead", time: 47.5, cueIndex: 7, kind: "goal", title: "比分改写", text: "第十六分钟，阿根廷一比零领先。", script: "比赛第十六分钟，阿根廷一比零领先，场面开始改变。", tag: "比分" },
+      { id: "replay", time: 85.16, cueIndex: 11, kind: "review", title: "进球回放", text: "回放显示梅西在弧顶闪开角度后左脚打门。", script: "回放看得很清楚，梅西在禁区弧顶闪开角度，左脚完成打门。", tag: "回放" },
+      { id: "assist", time: 105.28, cueIndex: 13, kind: "review", title: "助攻确认", text: "迪马利亚的直塞长传，为梅西创造了射门机会。", script: "刚刚给梅西传球的是迪马利亚，那脚直塞非常精准。", tag: "助攻" },
+      { id: "summary", time: 116.32, cueIndex: 14, kind: "summary", title: "阶段总结", text: "阿根廷暂时一比零领先。", script: "这一段结束时，阿根廷暂时一比零领先。", tag: "总结" }
+    ];
     const messages = [];
     let cues = [];
     let siteData = null;
@@ -809,6 +989,7 @@
     let recognition = null;
     let listening = false;
     let interactionMode = "api";
+    let eventsVisible = false;
 
     function esc(value) {
       return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -1043,6 +1224,64 @@
       apiStatus.textContent = label;
     }
 
+    function eventDuration() {
+      return video.duration && Number.isFinite(video.duration)
+        ? video.duration
+        : Math.max(...keyEvents.map(event => event.time), ...cues.map(cue => cue.end), 120);
+    }
+
+    function seekTo(seconds) {
+      video.currentTime = Math.max(0, seconds + 0.05);
+      video.play();
+    }
+
+    function nearestEvent(now = video.currentTime || 0) {
+      return keyEvents.find((event, index) => {
+        const next = keyEvents[index + 1]?.time ?? eventDuration();
+        return now >= event.time && now < next;
+      }) || null;
+    }
+
+    function setBoardMode(mode) {
+      const board = mode === "board";
+      chatPanel.classList.toggle("board-mode", board);
+      chatTab.classList.toggle("active", !board);
+      boardTab.classList.toggle("active", board);
+    }
+
+    function renderKeyEvents() {
+      const duration = Math.max(eventDuration(), 1);
+      const rowEnds = [-Infinity, -Infinity];
+      eventTimeline.innerHTML = keyEvents.map(event => {
+        const row = event.time - rowEnds[0] < 6 ? 1 : 0;
+        rowEnds[row] = event.time;
+        return `
+        <button class="event-marker" type="button" data-event="${esc(event.id)}" data-kind="${esc(event.kind)}" data-row="${row}" data-detail="${esc(formatTime(event.time) + " · " + event.title + "：" + event.text)}" style="left: ${(event.time / duration) * 100}%">${esc(event.tag)}</button>
+      `;
+      }).join("");
+      eventBoard.innerHTML = keyEvents.map(event => `
+        <button class="event-card" type="button" data-event="${esc(event.id)}">
+          <span class="event-card-top">
+            <span class="event-card-title">${esc(event.title)}</span>
+            <span class="cue-time">${formatTime(event.time)}</span>
+          </span>
+          <span class="event-card-text">${esc(event.text)}</span>
+        </button>
+      `).join("");
+      document.querySelectorAll("[data-event]").forEach(button => {
+        button.addEventListener("click", () => {
+          const hit = keyEvents.find(event => event.id === button.dataset.event);
+          if (hit) seekTo(hit.time);
+        });
+      });
+    }
+
+    function updateEventVisibility() {
+      eventToggleBtn.textContent = eventsVisible ? "隐藏关键事件" : "显示关键事件";
+      eventToggleBtn.setAttribute("aria-pressed", String(eventsVisible));
+      eventTimeline.classList.toggle("visible", eventsVisible);
+    }
+
     function renderTranscript() {
       document.getElementById("cueCount").textContent = `${cues.length} 条`;
       document.getElementById("transcript").innerHTML = cues.map(cue => `
@@ -1055,34 +1294,26 @@
         button.addEventListener("click", () => {
           const hit = cues.find(cue => cue.index === Number(button.dataset.cue));
           if (!hit) return;
-          video.currentTime = hit.start + 0.05;
-          video.play();
+          seekTo(hit.start);
         });
       });
-      const events = cues.filter(cue => /进球|打门|梅西|战术|防线|包夹/.test(cue.text));
-      document.getElementById("eventStrip").innerHTML = events.map(cue => `
-        <button class="event-btn" type="button" data-cue="${cue.index}">${formatTime(cue.start)} ${esc(cue.text)}</button>
-      `).join("");
-      document.querySelectorAll(".event-btn").forEach(button => {
-        button.addEventListener("click", () => {
-          const hit = cues.find(cue => cue.index === Number(button.dataset.cue));
-          if (!hit) return;
-          video.currentTime = hit.start + 0.05;
-          video.play();
-        });
-      });
+      renderKeyEvents();
+      updateEventVisibility();
     }
 
     function updateVideoState() {
       const now = video.currentTime || 0;
       const cue = currentCue();
+      const activeEvent = nearestEvent(now);
       const activeDemoCaption = demoCaption && demoCaption.start <= now && demoCaption.end >= now;
       document.getElementById("currentTime").textContent = formatTime(now);
-      document.getElementById("contextTime").textContent = formatTime(now);
       document.getElementById("activeCaption").textContent = activeDemoCaption ? demoCaption.text : (cue ? cue.text : "当前没有字幕");
       document.querySelectorAll(".cue").forEach(button => {
         const hit = cues.find(item => item.index === Number(button.dataset.cue));
         button.classList.toggle("active", Boolean(hit && hit.start <= now && hit.end >= now));
+      });
+      document.querySelectorAll("[data-event]").forEach(button => {
+        button.classList.toggle("active", Boolean(activeEvent && button.dataset.event === activeEvent.id));
       });
     }
 
@@ -1493,6 +1724,15 @@
       questionInput.focus();
     });
 
+    chatTab.addEventListener("click", () => setBoardMode("chat"));
+    boardTab.addEventListener("click", () => setBoardMode("board"));
+
+    eventToggleBtn.addEventListener("click", () => {
+      eventsVisible = !eventsVisible;
+      updateEventVisibility();
+      if (eventsVisible) setBoardMode("board");
+    });
+
     voiceBtn.addEventListener("click", startVoiceInput);
 
     document.querySelectorAll(".chip").forEach(button => {
@@ -1510,7 +1750,10 @@
     });
 
     teamSelect.addEventListener("change", () => setApiState(chatEndpoint ? "ready" : "local", chatEndpoint ? "API 已连接" : "本地上下文模式"));
+    video.addEventListener("loadedmetadata", () => renderKeyEvents());
+    video.addEventListener("play", updateVideoState);
     video.addEventListener("timeupdate", updateVideoState);
+    setBoardMode("chat");
     updateInteractionMode();
 
     init().catch(error => {
